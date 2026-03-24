@@ -1,3 +1,5 @@
+package ui;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -16,6 +18,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.Timer;
+import service.ImageIOService;
 
 /**
  * Reproduz PNG em {@code saida_animacao}; escala para caber na janela com sangria (como na tela principal).

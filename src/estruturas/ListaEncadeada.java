@@ -1,3 +1,7 @@
+package estruturas;
+
+import molde.No;
+
 /**
  * Lista linear encadeada simples (inserção no fim). Usada no histórico de caminhos dos frames.
  * Pilha/Fila são classes separadas.

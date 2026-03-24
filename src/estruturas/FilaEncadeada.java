@@ -1,3 +1,7 @@
+package estruturas;
+
+import molde.No;
+
 /** Fila FIFO — primeiro a entrar, primeiro a sair. */
 public class FilaEncadeada<T> {
     private No<T> inicio;
