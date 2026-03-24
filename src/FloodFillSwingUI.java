@@ -1,5 +1,3 @@
-package ui;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -24,9 +22,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.LineBorder;
-import service.FloodFillService;
-import service.ImageIOService;
-import service.LimpezaSaidas;
 
 /**
  * Interface Swing: {@code entrada.png}, 4 cores, pilha/fila; frames {@code anim_frame_*} em sequência única para animação.

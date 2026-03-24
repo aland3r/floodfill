@@ -1,7 +1,3 @@
-package estruturas;
-
-import molde.No;
-
 /** Pilha LIFO — último a entrar, primeiro a sair. */
 public class PilhaEncadeada<T> {
     private No<T> topo;

@@ -1,12 +1,6 @@
-package service;
-
-import estruturas.FilaEncadeada;
-import estruturas.ListaEncadeada;
-import estruturas.PilhaEncadeada;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
-import molde.Pixel;
 
 /**
  * Flood fill: vizinhos 4-conectados; pilha (DFS) e fila (BFS).

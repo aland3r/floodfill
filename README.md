@@ -1,5 +1,7 @@
 # Flood Fill — PBL01 (PUCPR)
 
+O código-fonte fica **direto em `FloodFill/src`** (pacote default): um `.java` por classe, sem subpastas de pacote — o `Main` chama `FloodFillSwingUI.iniciar()` sem `import` entre classes do projeto.
+
 ## Requisitos do enunciado (checklist)
 
 | Requisito | Implementação |
