@@ -1,5 +1,6 @@
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -25,24 +26,18 @@ public final class GravadorFramesParalelo implements AutoCloseable {
         this.exec = Executors.newFixedThreadPool(MAX_THREADS);
     }
 
-    /**
-     * Copia a imagem atual e agenda gravação em disco (outra thread).
-     */
+    /** Copia a imagem atual e agenda gravação em disco (outra thread). */
     public void submitFrame(BufferedImage imagemAtual, String caminho) {
         BufferedImage copia = io.copiar(imagemAtual);
         Future<?> f = exec.submit(() -> {
-            try {
-                io.salvar(copia, caminho);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            io.salvar(copia, caminho);
             return null;
         });
         futures.add(f);
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         exec.shutdown();
         try {
             if (!exec.awaitTermination(2, TimeUnit.HOURS)) {
@@ -53,16 +48,13 @@ public final class GravadorFramesParalelo implements AutoCloseable {
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new IOException("Interrompido ao gravar frames", e);
+            throw new UncheckedIOException(new IOException("interrompido ao gravar frames", e));
         } catch (ExecutionException e) {
             Throwable c = e.getCause();
-            if (c instanceof RuntimeException && c.getCause() instanceof IOException) {
-                throw (IOException) c.getCause();
+            if (c instanceof RuntimeException) {
+                throw (RuntimeException) c;
             }
-            if (c instanceof IOException) {
-                throw (IOException) c;
-            }
-            throw new IOException(c != null ? c : e);
+            throw new RuntimeException(c);
         }
     }
 }

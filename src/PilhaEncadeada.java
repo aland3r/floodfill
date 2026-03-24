@@ -13,9 +13,6 @@ public class PilhaEncadeada<T> {
     }
 
     public T pop() {
-        if (estaVazia()) {
-            throw new IllegalStateException("Pilha vazia");
-        }
         T v = topo.valor;
         topo = topo.proximo;
         return v;

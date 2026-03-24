@@ -5,17 +5,14 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.Timer;
@@ -24,6 +21,8 @@ import javax.swing.Timer;
  * Reproduz PNG em {@code saida_animacao}; escala para caber na janela com sangria (como na tela principal).
  */
 public final class ReprodutorAnimacao {
+
+    private static final ImageIOService IO = new ImageIOService();
 
     /** Intervalo entre frames (maior = animação mais lenta). */
     private static final int MS_POR_FRAME = 85;
@@ -50,10 +49,6 @@ public final class ReprodutorAnimacao {
         }
         Collections.sort(frames);
         if (frames.isEmpty()) {
-            JOptionPane.showMessageDialog(dono,
-                    "Nenhum frame encontrado.\nExecute antes Preencher (pilha) ou (fila).",
-                    "Animação",
-                    JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
@@ -74,19 +69,15 @@ public final class ReprodutorAnimacao {
                 status.setText("Fim — " + frames.size() + " frames");
                 return;
             }
-            try {
-                BufferedImage src = ImageIO.read(frames.get(indice[0]));
-                Dimension ext = scroll.getViewport().getExtentSize();
-                int vw = ext.width > 32 ? ext.width : 880;
-                int vh = ext.height > 32 ? ext.height : 560;
-                int maxW = Math.max(64, (int) (vw * FRACAO_AREA_UTIL));
-                int maxH = Math.max(64, (int) (vh * FRACAO_AREA_UTIL));
-                BufferedImage exibicao = escalarParaArea(src, maxW, maxH);
-                lbl.setIcon(new ImageIcon(exibicao));
-                status.setText("Frame " + (indice[0] + 1) + " / " + frames.size());
-            } catch (IOException ex) {
-                status.setText("Erro ao ler frame");
-            }
+            BufferedImage src = IO.carregar(frames.get(indice[0]).getAbsolutePath());
+            Dimension ext = scroll.getViewport().getExtentSize();
+            int vw = ext.width > 32 ? ext.width : 880;
+            int vh = ext.height > 32 ? ext.height : 560;
+            int maxW = Math.max(64, (int) (vw * FRACAO_AREA_UTIL));
+            int maxH = Math.max(64, (int) (vh * FRACAO_AREA_UTIL));
+            BufferedImage exibicao = escalarParaArea(src, maxW, maxH);
+            lbl.setIcon(new ImageIcon(exibicao));
+            status.setText("Frame " + (indice[0] + 1) + " / " + frames.size());
             indice[0]++;
         });
 

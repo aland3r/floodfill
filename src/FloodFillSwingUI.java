@@ -1,5 +1,3 @@
-import java.awt.AlphaComposite;
-import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -15,23 +13,20 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import javax.imageio.ImageIO;
+import java.util.Objects;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.LineBorder;
 
 /**
- * Swing mínimo: {@code entrada.png}, 4 cores, pilha/fila; frames {@code anim_frame_*} em sequência única para animação.
+ * Interface Swing: {@code entrada.png}, 4 cores, pilha/fila; frames {@code anim_frame_*} em sequência única para animação.
  */
-public final class FloodFillSwingApp {
+public final class FloodFillSwingUI {
 
     private static final String ARQUIVO_CURSOR_BALDE = "paint-bucket-icon.png";
 
@@ -39,10 +34,8 @@ public final class FloodFillSwingApp {
     private static final Cursor CURSOR_BALDE_TINTA = criarCursorBaldeTinta();
 
     private static Cursor criarCursorBaldeTinta() {
-        BufferedImage src = carregarImagemCursorBalde();
-        if (src == null) {
-            return criarCursorBaldeTintaFallback();
-        }
+        BufferedImage src = new ImageIOService().ler(
+                Objects.requireNonNull(FloodFillSwingUI.class.getResourceAsStream(ARQUIVO_CURSOR_BALDE)));
         BufferedImage bi = garantirArgbParaCursor(src);
         final int target = 32;
         if (bi.getWidth() != target || bi.getHeight() != target) {
@@ -55,14 +48,9 @@ public final class FloodFillSwingApp {
         }
         int tw = bi.getWidth();
         int th = bi.getHeight();
-        // Ponta da gota junto ao canto inferior direito (ícone paint-bucket).
         int hx = Math.max(0, tw - 2);
         int hy = Math.max(0, th - 2);
-        try {
-            return Toolkit.getDefaultToolkit().createCustomCursor(bi, new Point(hx, hy), "baldeTinta");
-        } catch (Exception e) {
-            return criarCursorBaldeTintaFallback();
-        }
+        return Toolkit.getDefaultToolkit().createCustomCursor(bi, new Point(hx, hy), "baldeTinta");
     }
 
     private static BufferedImage garantirArgbParaCursor(BufferedImage src) {
@@ -76,88 +64,8 @@ public final class FloodFillSwingApp {
         return out;
     }
 
-    private static BufferedImage carregarImagemCursorBalde() {
-        try (InputStream in = FloodFillSwingApp.class.getResourceAsStream(ARQUIVO_CURSOR_BALDE)) {
-            if (in != null) {
-                return ImageIO.read(in);
-            }
-        } catch (IOException ignored) {
-        }
-        try {
-            java.security.CodeSource cs = FloodFillSwingApp.class.getProtectionDomain().getCodeSource();
-            if (cs != null) {
-                URL loc = cs.getLocation();
-                if ("file".equals(loc.getProtocol())) {
-                    File dir = new File(loc.toURI());
-                    if (dir.isDirectory()) {
-                        File png = new File(dir, ARQUIVO_CURSOR_BALDE);
-                        if (png.isFile()) {
-                            return ImageIO.read(png);
-                        }
-                        File pai = dir.getParentFile();
-                        if (pai != null) {
-                            File pngPastaPai = new File(pai, ARQUIVO_CURSOR_BALDE);
-                            if (pngPastaPai.isFile()) {
-                                return ImageIO.read(pngPastaPai);
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception ignored) {
-        }
-        String base = System.getProperty("user.dir", ".");
-        String[] candidatos = {
-                "src" + File.separator + ARQUIVO_CURSOR_BALDE,
-                ARQUIVO_CURSOR_BALDE,
-                "FloodFill" + File.separator + ARQUIVO_CURSOR_BALDE,
-                ".." + File.separator + ARQUIVO_CURSOR_BALDE,
-                base + File.separator + "src" + File.separator + ARQUIVO_CURSOR_BALDE,
-                base + File.separator + ARQUIVO_CURSOR_BALDE
-        };
-        for (String rel : candidatos) {
-            File f = new File(rel);
-            if (f.isFile()) {
-                try {
-                    return ImageIO.read(f);
-                } catch (IOException ignored) {
-                }
-            }
-        }
-        return null;
-    }
-
-    private static Cursor criarCursorBaldeTintaFallback() {
-        int w = 32;
-        int h = 32;
-        BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = bi.createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setComposite(AlphaComposite.Clear);
-        g.fillRect(0, 0, w, h);
-        g.setComposite(AlphaComposite.SrcOver);
-        g.setColor(new Color(75, 78, 90));
-        int[] bx = {7, 7, 9, 23, 25, 25, 23};
-        int[] by = {8, 22, 25, 27, 25, 9, 7};
-        g.fillPolygon(bx, by, bx.length);
-        g.setColor(new Color(40, 42, 48));
-        g.setStroke(new BasicStroke(1.2f));
-        g.drawPolygon(bx, by, bx.length);
-        g.setColor(new Color(90, 130, 240));
-        g.fillPolygon(new int[]{9, 23, 22, 10}, new int[]{12, 12, 21, 21}, 4);
-        g.setColor(new Color(55, 58, 65));
-        g.setStroke(new BasicStroke(2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        g.drawArc(17, 3, 12, 11, 15, 130);
-        g.dispose();
-        try {
-            return Toolkit.getDefaultToolkit().createCustomCursor(bi, new Point(5, 27), "baldeTinta");
-        } catch (Exception e) {
-            return Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
-        }
-    }
-
     private static final String ARQUIVO_ENTRADA = "entrada.png";
-    /** Menos frames = mais rápido (CLI / modo sem quadros fixos). */
+    /** Menos frames = mais rápido. */
     private static final int PASSO_FRAME = 20;
     /** Cada preenchimento grava exatamente estes PNGs; o último fecha a região (apresentação). */
     private static final int QUADROS_ANIMACAO_APRESENTACAO = 188;
@@ -190,7 +98,7 @@ public final class FloodFillSwingApp {
     private int selecionadoY = -1;
 
     public static void iniciar() {
-        SwingUtilities.invokeLater(() -> new FloodFillSwingApp().montar());
+        SwingUtilities.invokeLater(() -> new FloodFillSwingUI().montar());
     }
 
     private void montar() {
@@ -259,7 +167,7 @@ public final class FloodFillSwingApp {
         frame.add(barra, BorderLayout.NORTH);
         frame.add(painel, BorderLayout.CENTER);
 
-        carregarEntradaOuAviso();
+        carregarEntrada();
         frame.setSize(1000, 700);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
@@ -272,29 +180,38 @@ public final class FloodFillSwingApp {
         }
     }
 
-    private void carregarEntradaOuAviso() {
-        File f = null;
-        for (String rel : new String[]{ARQUIVO_ENTRADA, "FloodFill" + File.separator + ARQUIVO_ENTRADA}) {
+    private void carregarEntrada() {
+        File noDisco = localizarEntradaNoDisco();
+        if (noDisco != null) {
+            original = io.carregar(noDisco.getAbsolutePath());
+        } else {
+            InputStream in = FloodFillSwingUI.class.getResourceAsStream("/" + ARQUIVO_ENTRADA);
+            if (in == null) {
+                in = FloodFillSwingUI.class.getResourceAsStream(ARQUIVO_ENTRADA);
+            }
+            original = io.ler(Objects.requireNonNull(in, "entrada.png: use pasta FloodFill como working directory ou coloque o PNG em src/"));
+        }
+        restaurar();
+        frame.setTitle("Flood Fill — " + ARQUIVO_ENTRADA);
+    }
+
+    /** CWD do IntelliJ nem sempre é a pasta FloodFill; tenta os caminhos usuais do projeto. */
+    private static File localizarEntradaNoDisco() {
+        String base = System.getProperty("user.dir", ".");
+        String[] candidatos = {
+                ARQUIVO_ENTRADA,
+                "FloodFill" + File.separator + ARQUIVO_ENTRADA,
+                "src" + File.separator + ARQUIVO_ENTRADA,
+                base + File.separator + ARQUIVO_ENTRADA,
+                base + File.separator + "FloodFill" + File.separator + ARQUIVO_ENTRADA
+        };
+        for (String rel : candidatos) {
             File t = new File(rel);
             if (t.isFile()) {
-                f = t;
-                break;
+                return t;
             }
         }
-        if (f == null) {
-            JOptionPane.showMessageDialog(frame,
-                    "Coloque " + ARQUIVO_ENTRADA + " na pasta de execução (ex.: FloodFill/).",
-                    "Entrada",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        try {
-            original = io.carregar(f.getAbsolutePath());
-            restaurar();
-            frame.setTitle("Flood Fill — " + f.getName());
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, ex.getMessage(), "Erro ao carregar", JOptionPane.ERROR_MESSAGE);
-        }
+        return null;
     }
 
     private void restaurar() {
@@ -326,7 +243,6 @@ public final class FloodFillSwingApp {
             return;
         }
         if (selecionadoX < 0) {
-            JOptionPane.showMessageDialog(frame, "Clique na imagem antes.", "Ponto", JOptionPane.WARNING_MESSAGE);
             return;
         }
         File pasta = new File(LimpezaSaidas.PASTA_ANIMACAO);
@@ -343,7 +259,7 @@ public final class FloodFillSwingApp {
         setOcupado(true);
         SwingWorker<Void, Void> w = new SwingWorker<>() {
             @Override
-            protected Void doInBackground() throws Exception {
+            protected Void doInBackground() {
                 if (pilha) {
                     flood.preencherComPilha(
                             img, sx, sy, prefixoFrames, PASSO_FRAME, corRgb, deslocamentoFrames,
@@ -365,30 +281,24 @@ public final class FloodFillSwingApp {
                 setOcupado(false);
                 try {
                     get();
-                    trabalho = img;
-                    painel.setImagem(trabalho);
-                    selecionadoX = -1;
-                    selecionadoY = -1;
-                    lblCoords.setText("Clique na próxima área");
-                } catch (Exception ex) {
-                    Throwable c = ex.getCause() != null ? ex.getCause() : ex;
-                    JOptionPane.showMessageDialog(frame, c.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                } catch (java.util.concurrent.ExecutionException e) {
+                    throw new RuntimeException(e.getCause());
                 }
+                trabalho = img;
+                painel.setImagem(trabalho);
+                selecionadoX = -1;
+                selecionadoY = -1;
+                lblCoords.setText("Clique na próxima área");
             }
         };
         w.execute();
     }
 
     private void verAnimacao() {
-        File pasta = new File(LimpezaSaidas.PASTA_ANIMACAO);
-        if (LimpezaSaidas.maiorIndiceArquivoFrame(pasta, LimpezaSaidas.PREFIXO_FRAME_SESSAO) <= 0) {
-            JOptionPane.showMessageDialog(frame,
-                    "Nenhum frame ainda. Execute Preencher (pilha) e/ou (fila).",
-                    "Animação",
-                    JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
-        ReprodutorAnimacao.mostrar(frame, pasta, LimpezaSaidas.PREFIXO_FRAME_SESSAO);
+        ReprodutorAnimacao.mostrar(frame, new File(LimpezaSaidas.PASTA_ANIMACAO), LimpezaSaidas.PREFIXO_FRAME_SESSAO);
     }
 
     private void setOcupado(boolean b) {

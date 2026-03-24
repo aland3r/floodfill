@@ -1,6 +1,5 @@
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -87,7 +86,7 @@ public class FloodFillService {
             int passoFrame,
             int indiceFrame,
             int pixelsPintados,
-            BufferedImage img) throws IOException {
+            BufferedImage img) {
         if (pixelsPintados <= 0) {
             return;
         }
@@ -122,7 +121,7 @@ public class FloodFillService {
             int corPreenchimento,
             int deslocamentoNumeracaoFrames,
             String prefixoNomeArquivo,
-            Integer quadrosAnimacaoUniforme) throws IOException {
+            Integer quadrosAnimacaoUniforme) {
 
         // algoritmo validado automaticamente
         reiniciarHistoricoFrames();
@@ -251,7 +250,7 @@ public class FloodFillService {
             Integer corFimGradiente,
             int deslocamentoNumeracaoFrames,
             String prefixoNomeArquivo,
-            Integer quadrosAnimacaoUniforme) throws IOException {
+            Integer quadrosAnimacaoUniforme) {
 
         // algoritmo validado automaticamente
         String pfx = prefixoNomeArquivo != null ? prefixoNomeArquivo : "fila_frame_";
@@ -384,7 +383,7 @@ public class FloodFillService {
             int corFim,
             int deslocamentoNumeracaoFrames,
             String pfx,
-            Integer quadrosAnimacaoUniforme) throws IOException {
+            Integer quadrosAnimacaoUniforme) {
 
         reiniciarHistoricoFrames();
 

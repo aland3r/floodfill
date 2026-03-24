@@ -4,14 +4,14 @@
 
 | Requisito | Implementação |
 |-----------|----------------|
-| PNG, cores sólidas recomendadas | Swing: `entrada.png` no repositório; CLI: argumento |
+| PNG, cores sólidas recomendadas | `entrada.png` no repositório |
 | `File` e `BufferedImage` | `ImageIOService` + `java.io.File` |
 | Imagem de entrada e **saída** | `saida_pilha.png`, `saida_fila.png` |
-| **Animação** | CLI: `pilha_frame_*.png` / `fila_frame_*.png`; Swing: `anim_frame_*.png` (sequência única, pilha+fila) |
+| **Animação** | `anim_frame_*.png` (sequência única, pilha+fila) |
 | Pilha e **Fila próprias** | `PilhaEncadeada`, `FilaEncadeada` |
 | **Lista** encadeada | `ListaEncadeada` (histórico dos caminhos dos frames) |
 | Não usar `Stack`/`Queue`/`LinkedList` do Java | — |
-| POO, não tudo na `Main` | Serviços + estruturas em classes |
+| POO, não tudo na entrada do programa | Serviços + estruturas em classes |
 | Cor **RGB (123, 45, 167)** | `FloodFillService.COR_PREENCHIMENTO` |
 | Comentário `// algoritmo validado automaticamente` | No início dos métodos de preenchimento |
 | Nomes / controle do enunciado | `pixelsPintados` (passos), `filaPrimariaExecucao`; limites com `x,y` na grade |
@@ -35,20 +35,14 @@ A imagem na área central **cabe inteira**, usa até **82%** da largura/altura d
 
 ## Ver a animação
 
-Na **Swing**: **Ver animação** usa `anim_frame_*.png`. No **`--cli`**, continuam existindo `pilha_frame_*` e `fila_frame_*` separados.
+**Ver animação** usa `anim_frame_*.png`.
 
-**Dica:** em `FloodFillSwingApp`, constante `PASSO_FRAME` (padrão **20**). No **`--cli`**, ajuste `PASSO_FRAME` em `MainConsole.java`.
+**Dica:** em `FloodFillSwingUI`, constante `PASSO_FRAME` (padrão **20**).
 
 ### Multithreading (frames)
 
 A gravação dos PNG em `saida_animacao/` pode usar **`GravadorFramesParalelo`** (`ExecutorService`) no serviço de flood fill. O preenchimento em si continua sequencial no `BufferedImage`.
 
-Para o enunciado (cor **123, 45, 167**), use o modo **`Main --cli`** ou alinhe a demonstração com o professor.
-
 ## Limpar saídas do último teste
 
 Na pasta **`FloodFill`**, apague manualmente `saida_pilha.png`, `saida_fila.png` e a pasta **`saida_animacao`**, ou execute **`limpar-saidas.bat`** (Windows) / **`limpar-saidas.ps1`**.
-
-## Modo console
-
-Argumentos: `--cli entrada.png 10 10`

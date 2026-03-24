@@ -19,9 +19,6 @@ public class FilaEncadeada<T> {
     }
 
     public T dequeue() {
-        if (estaVazia()) {
-            throw new IllegalStateException("Fila vazia");
-        }
         T v = inicio.valor;
         inicio = inicio.proximo;
         if (inicio == null) {

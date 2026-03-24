@@ -37,11 +37,12 @@ public final class LimpezaSaidas {
             if (!n.startsWith(prefixo) || !n.endsWith(".png")) {
                 continue;
             }
-            try {
-                int v = Integer.parseInt(n.substring(prefixo.length(), n.length() - 4));
-                max = Math.max(max, v);
-            } catch (NumberFormatException ignored) {
+            String suf = n.substring(prefixo.length(), n.length() - 4);
+            if (!suf.chars().allMatch(Character::isDigit)) {
+                continue;
             }
+            int v = Integer.parseInt(suf);
+            max = Math.max(max, v);
         }
         return max;
     }
@@ -72,19 +73,15 @@ public final class LimpezaSaidas {
 
     /** Apaga PNGs de saída ({@link #SAIDA_PILHA}, {@link #SAIDA_FILA}) e todos os frames em {@link #PASTA_ANIMACAO}. */
     public static void apagarTodasSaidasDeTeste() {
-        try {
-            File fPilha = new File(SAIDA_PILHA);
-            if (fPilha.isFile()) {
-                fPilha.delete();
-            }
-            File fFila = new File(SAIDA_FILA);
-            if (fFila.isFile()) {
-                fFila.delete();
-            }
-            esvaziarPastaAnimacao();
-        } catch (Exception ignored) {
-            // não bloqueia
+        File fPilha = new File(SAIDA_PILHA);
+        if (fPilha.isFile()) {
+            fPilha.delete();
         }
+        File fFila = new File(SAIDA_FILA);
+        if (fFila.isFile()) {
+            fFila.delete();
+        }
+        esvaziarPastaAnimacao();
     }
 
     private static void apagarDiretorioRecursivo(File dir) {
