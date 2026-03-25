@@ -121,7 +121,6 @@ public final class FloodFillSwingUI {
         btnFila.addActionListener(e -> aplicar(false));
         btnReset = new JButton("Restaurar"); //instacie botão com texto para posterior restauração
         btnReset.addActionListener(e -> {
-            // apagarTodasSaidasDeTeste esvazia saida_animacao (frames antigos somem); próximos preenchimentos renumeram do 1.
             LimpezaSaidas.apagarTodasSaidasDeTeste();
             restaurar();
         });
@@ -243,8 +242,9 @@ public final class FloodFillSwingUI {
         if (!pasta.exists()) {
             pasta.mkdirs();
         }
+        int deslocamentoFrames =
+                LimpezaSaidas.maiorIndiceArquivoFrame(pasta, LimpezaSaidas.PREFIXO_FRAME_SESSAO);
         String prefixoFrames = pasta.getAbsolutePath();
-        int deslocamentoFrames = LimpezaSaidas.maiorIndiceArquivoFrame(pasta, LimpezaSaidas.PREFIXO_FRAME_SESSAO);
         int corRgb = CORES[indiceCor].getRGB();
         BufferedImage img = io.copiar(trabalho);
         int sx = selecionadoX;

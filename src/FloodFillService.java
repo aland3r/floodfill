@@ -13,14 +13,8 @@ public class FloodFillService { //Declare a classe FloodFillService pública
     /** Cor exigida pelo enunciado PBL01: RGB (123, 45, 167). */
     public static final int COR_PREENCHIMENTO = rgb(123, 45, 167); //Declare a variável COR_PREENCHIMENTO como final e do tipo int
 
-    private final ListaEncadeada<String> historicoCaminhosFrames = new ListaEncadeada<>(); //Declare a variável historicoCaminhosFrames como final e do tipo ListaEncadeada<String>
-
     public FloodFillService(ImageIOService imageIOService) {
         this.imageIOService = imageIOService; //Inicialize a variável imageIOService com o valor passado
-    }
-
-    private void reiniciarHistoricoFrames() { //Declare o método reiniciarHistoricoFrames público
-        historicoCaminhosFrames.esvaziar(); //Esvazie o histórico de caminhos dos frames
     }
 
     /**
@@ -28,11 +22,11 @@ public class FloodFillService { //Declare a classe FloodFillService pública
      * não completaram um bloco de {@code passoFrame} (senão o último frame da animação fica incompleto).
      * Não duplica se o último save periódico já coincidiu com o fim do preenchimento.
      */
-    private void salvarFrameFinalSeNecessario( //Declare o método salvarFrameFinalSeNecessario público e recebe um GravadorFramesParalelo, String, String, int, int, int, int, BufferedImage
+    private void salvarFrameFinalSeNecessario(
             GravadorFramesParalelo gravador, //Declare a variável gravador como final e do tipo GravadorFramesParalelo
             String pastaFrames, //Declare a variável pastaFrames como final e do tipo String
             String pfx, //Declare a variável pfx como final e do tipo String
-            int deslocamentoNumeracaoFrames, //Declare a variável deslocamentoNumeracaoFrames como final e do tipo int
+            int deslocamentoNumeracaoFrames, // somado ao índice local (concatenar pilha + fila na mesma sessão)
             int passoFrame, //Declare a variável passoFrame como final e do tipo int
             int indiceFrame, //Declare a variável indiceFrame como final e do tipo int
             int pixelsPintados, //Declare a variável pixelsPintados como final e do tipo int
@@ -51,14 +45,13 @@ public class FloodFillService { //Declare a classe FloodFillService pública
         if (!precisa) {
             return; //Retorne se a variável precisa for false
         }
-        int num = deslocamentoNumeracaoFrames + (indiceFrame > 0 ? indiceFrame + 1 : 1); //Calcule o número de pixels para o quadro
+        int num = deslocamentoNumeracaoFrames + (indiceFrame > 0 ? indiceFrame + 1 : 1);
         String caminho = String.format("%s/%s%05d.png", pastaFrames, pfx, num); //Crie um novo arquivo com o caminho passado
         gravador.submitFrame(img, caminho);
-        historicoCaminhosFrames.adicionar(caminho); //Adicione o caminho ao histórico de caminhos dos frames
     }
 
     /**
-     * @param deslocamentoNumeracaoFrames somado ao índice dos PNG (0 = começa em 00001; após frames existentes, use o maior índice já salvo).
+     * @param deslocamentoNumeracaoFrames maior índice já usado na pasta de frames (0 = começa em 00001).
      * @param prefixoNomeArquivo ex. {@code "pilha_frame_"}; se {@code null}, usa {@code "pilha_frame_"}.
      * @param passoFrame a cada quantos pixels pintados grava um PNG; se &lt;= 0, só grava o frame final (via {@link #salvarFrameFinalSeNecessario}).
      */
@@ -69,12 +62,10 @@ public class FloodFillService { //Declare a classe FloodFillService pública
             String prefixoSaidaFrames, //Declare a variável prefixoSaidaFrames como final e do tipo String
             int passoFrame, //Declare a variável passoFrame como final e do tipo int
             int corPreenchimento, //Declare a variável corPreenchimento como final e do tipo int
-            int deslocamentoNumeracaoFrames, //Declare a variável deslocamentoNumeracaoFrames como final e do tipo int
+            int deslocamentoNumeracaoFrames,
             String prefixoNomeArquivo) { //Declare a variável prefixoNomeArquivo como final e do tipo String
 
         // algoritmo validado automaticamente
-        reiniciarHistoricoFrames(); //Reinicie o histórico de caminhos dos frames
-
         String pfx = prefixoNomeArquivo != null ? prefixoNomeArquivo : "pilha_frame_"; //Declare a variável pfx como final e do tipo String
 
         int pixelsPintados = 0; //Declare a variável pixelsPintados como final e do tipo int        
@@ -117,7 +108,6 @@ public class FloodFillService { //Declare a classe FloodFillService pública
                                 pfx,
                                 deslocamentoNumeracaoFrames + indiceFrame);
                         gravador.submitFrame(img, caminho); //Envie o frame para o gravador     
-                        historicoCaminhosFrames.adicionar(caminho); //Adicione o caminho ao histórico de caminhos dos frames
                     }
 
                     pilha.push(new Pixel(x + 1, y)); //Empilhe o pixel
@@ -129,7 +119,7 @@ public class FloodFillService { //Declare a classe FloodFillService pública
                         gravador, //Declare a variável gravador como final e do tipo GravadorFramesParalelo
                         prefixoSaidaFrames, //Declare a variável prefixoSaidaFrames como final e do tipo String
                         pfx, //Declare a variável pfx como final e do tipo String
-                        deslocamentoNumeracaoFrames, //Declare a variável deslocamentoNumeracaoFrames como final e do tipo int
+                        deslocamentoNumeracaoFrames,
                         passoFrame, //Declare a variável passoFrame como final e do tipo int
                         indiceFrame, //Declare a variável indiceFrame como final e do tipo int
                         pixelsPintados, //Declare a variável pixelsPintados como final e do tipo int
@@ -161,7 +151,7 @@ public class FloodFillService { //Declare a classe FloodFillService pública
     }
 
     /**
-     * @param deslocamentoNumeracaoFrames somado ao índice dos PNG de fila.
+     * @param deslocamentoNumeracaoFrames igual a {@link #preencherComPilha}.
      * @param prefixoNomeArquivo ex. {@code "fila_frame_"}; se {@code null}, usa {@code "fila_frame_"}.
      * @see #preencherComPilha parâmetros de frames iguais (passo a cada N pixels).
      */
@@ -172,13 +162,11 @@ public class FloodFillService { //Declare a classe FloodFillService pública
             String prefixoSaidaFrames, //Declare a variável prefixoSaidaFrames como final e do tipo String
             int passoFrame, //Declare a variável passoFrame como final e do tipo int
             int corPreenchimento, //Declare a variável corPreenchimento como final e do tipo int
-            int deslocamentoNumeracaoFrames, //Declare a variável deslocamentoNumeracaoFrames como final e do tipo int
+            int deslocamentoNumeracaoFrames,
             String prefixoNomeArquivo) { //Declare a variável prefixoNomeArquivo como final e do tipo String
 
         // algoritmo validado automaticamente
         String pfx = prefixoNomeArquivo != null ? prefixoNomeArquivo : "fila_frame_"; //Declare a variável pfx como final e do tipo String  
-
-        reiniciarHistoricoFrames(); //Reinicie o histórico de caminhos dos frames
 
         int pixelsPintados = 0; //Declare a variável pixelsPintados como final e do tipo int        
 
@@ -220,7 +208,6 @@ public class FloodFillService { //Declare a classe FloodFillService pública
                                 pfx,
                                 deslocamentoNumeracaoFrames + indiceFrame);
                         gravador.submitFrame(img, caminho);
-                        historicoCaminhosFrames.adicionar(caminho);
                     }
 
                     filaPrimariaExecucao.enqueue(new Pixel(x + 1, y));

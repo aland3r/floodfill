@@ -17,8 +17,8 @@ public final class LimpezaSaidas {
     }
 
     /**
-     * Maior sufixo numérico já usado em arquivos {@code prefixo00001.png} (0 se não houver).
-     * Permite continuar a animação após vários preenchimentos na mesma sessão.
+     * Maior sufixo numérico em {@code prefixo00001.png} na pasta (0 se não houver).
+     * Usado para continuar a numeração após um preenchimento (pilha + fila na mesma animação).
      */
     public static int maiorIndiceArquivoFrame(File pasta, String prefixo) {
         if (pasta == null || !pasta.isDirectory()) {
@@ -49,21 +49,22 @@ public final class LimpezaSaidas {
 
     /**
      * Remove todos os arquivos dentro de {@link #PASTA_ANIMACAO} e recria a pasta vazia se necessário.
-     * Não remove o diretório em si — em Windows, apagar a pasta inteira costuma falhar se algo ainda referenciar um PNG;
-     * assim {@link #maiorIndiceArquivoFrame} volta a 0 e a animação seguinte só mostra os novos preenchimentos.
+     * Usado em {@link #apagarTodasSaidasDeTeste()} (Restaurar / limpar saídas), não antes de cada fill.
      */
     public static void esvaziarPastaAnimacao() {
         File pastaAnim = new File(PASTA_ANIMACAO);
         if (pastaAnim.isDirectory()) {
             File[] filhos = pastaAnim.listFiles();
             if (filhos != null) {
+                ListaEncadeada<File> arquivos = new ListaEncadeada<>();
                 for (File f : filhos) {
                     if (f.isFile()) {
-                        f.delete();
+                        arquivos.adicionar(f);
                     } else if (f.isDirectory()) {
                         apagarDiretorioRecursivo(f);
                     }
                 }
+                arquivos.paraCada(File::delete);
             }
         }
         if (!pastaAnim.exists()) {

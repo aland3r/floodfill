@@ -11,7 +11,7 @@ O código-fonte fica **direto em `FloodFill/src`** (pacote default): um `.java` 
 | Imagem de entrada e **saída** | `saida_pilha.png`, `saida_fila.png` |
 | **Animação** | `anim_frame_*.png` (sequência única, pilha+fila) |
 | Pilha e **Fila próprias** | `PilhaEncadeada`, `FilaEncadeada` |
-| **Lista** encadeada | `ListaEncadeada` (histórico dos caminhos dos frames) |
+| **Lista** encadeada | `ListaEncadeada` (ex.: enfileira arquivos a apagar em `LimpezaSaidas`) |
 | Não usar `Stack`/`Queue`/`LinkedList` do Java | — |
 | POO, não tudo na entrada do programa | Serviços + estruturas em classes |
 | Cor **RGB (123, 45, 167)** | `FloodFillService.COR_PREENCHIMENTO` |
@@ -29,9 +29,9 @@ O código-fonte fica **direto em `FloodFill/src`** (pacote default): um `.java` 
 2. Escolher uma das **4 cores** (botões coloridos).  
 3. **Clicar na imagem** na região a preencher.  
 4. **Preencher (pilha)** ou **Preencher (fila)**.  
-5. **Ver animação** reproduz todos os `anim_frame_*.png` em ordem (**pilha e fila na mesma sequência**).  
-6. **Restaurar** volta a imagem, zera o ponto e apaga saídas de teste (como `limpar-saidas`).  
-7. **Vários preenchimentos:** cada Pilha/Fila parte do estado atual; os frames **seguem a numeração** em `anim_frame_*.png` até **Restaurar**.
+5. **Ver animação** reproduz todos os `anim_frame_*.png` em ordem — na mesma sessão, **pilha e fila** podem ficar **numa sequência só** (numeração continua entre um fill e o próximo).  
+6. **Restaurar** volta a imagem, zera o ponto e apaga saídas de teste (inclui esvaziar `saida_animacao`).  
+7. **Fluxo típico (duas áreas):** preencher uma região com **pilha**, outra com **fila**, depois **Ver animação**; um terceiro fill seguiria anexando frames até **Restaurar**.
 
 A imagem na área central **cabe inteira**, usa até **82%** da largura/altura do painel (sangria branca em volta), **pode ampliar** imagens pequenas; o clique continua alinhado ao retângulo desenhado. Interpolação **nearest-neighbor** mantém pixel art nítido. A mesma lógica de escala/sangria vale na janela **Ver animação**.
 
