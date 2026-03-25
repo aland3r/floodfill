@@ -23,14 +23,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.LineBorder;
 
-/**
- * Interface Swing: {@code entrada.png}, 4 cores, pilha/fila; frames {@code anim_frame_*} em sequência única para animação.
- */
 public final class FloodFillSwingUI {
 
     private static final String ARQUIVO_CURSOR_BALDE = "paint-bucket-icon.png";
 
-    /** Cursor de balde (PNG); hotspot na ponta da gota (canto inferior direito do ícone). */
     private static final Cursor CURSOR_BALDE_TINTA = criarCursorBaldeTinta();
 
     private static Cursor criarCursorBaldeTinta() {
@@ -77,11 +73,11 @@ public final class FloodFillSwingUI {
             new Color(255, 159, 196)
     };
 
-    private BufferedImage original;
-    private BufferedImage trabalho;
-    private final ImageIOService io = new ImageIOService();
-    private final FloodFillService flood = new FloodFillService(io);
-
+    private BufferedImage original; //reserve arquétipo batizado dessa estirpe para guardar entrada.png na memória
+    private BufferedImage trabalho; //reserve arquétipo batizado para guardar cópia de entrada.png sem destruir a original
+    private final ImageIOService io = new ImageIOService(); //perpetue o nome atribuído à nova instancia dessa classe
+    private final FloodFillService flood = new FloodFillService(io); //perpetue o nome atribuído à nova instancia dependente de io
+        
     private int indiceCor = 0;
 
     private final PainelImagem painel = new PainelImagem();
@@ -97,9 +93,9 @@ public final class FloodFillSwingUI {
     private int selecionadoX = -1;
     private int selecionadoY = -1;
 
-    public static void iniciar() {
-        SwingUtilities.invokeLater(() -> new FloodFillSwingUI().montar());
-    }
+    public static void iniciar() {  //inicie interface
+        SwingUtilities.invokeLater(() -> new FloodFillSwingUI().montar()); 
+    } //Monte instância de UI com campos prontos e peças novas, enfileire tudo com invokeLater do Swing
 
     private void montar() {
         frame = new JFrame("Flood Fill");
@@ -238,7 +234,7 @@ public final class FloodFillSwingUI {
         lblCoords.setText("(" + selecionadoX + ", " + selecionadoY + ")");
     }
 
-    private void aplicar(boolean pilha) {
+    private void aplicar(boolean pilha) { //Dispare o fill com pilha ou fila conforme o boolean, sobre uma cópia do BufferedImage no ponto (sx,sy) com a cor escolhida.
         if (trabalho == null || original == null) {
             return;
         }
@@ -262,10 +258,10 @@ public final class FloodFillSwingUI {
             protected Void doInBackground() {
                 if (pilha) {
                     flood.preencherComPilha(
-                            img, sx, sy, prefixoFrames, PASSO_FRAME, corRgb, deslocamentoFrames,
+                            img, sx, sy, prefixoFrames, PASSO_FRAME, corRgb, deslocamentoFrames, 
                             LimpezaSaidas.PREFIXO_FRAME_SESSAO,
                             QUADROS_ANIMACAO_APRESENTACAO);
-                    io.salvar(img, LimpezaSaidas.SAIDA_PILHA);
+                    io.salvar(img, LimpezaSaidas.SAIDA_PILHA); //
                 } else {
                     flood.preencherComFila(
                             img, sx, sy, prefixoFrames, PASSO_FRAME, corRgb, null, deslocamentoFrames,
