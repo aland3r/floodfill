@@ -61,10 +61,8 @@ public final class FloodFillSwingUI {
     }
 
     private static final String ARQUIVO_ENTRADA = "entrada.png";
-    /** Menos frames = mais rápido. */
+    /** Menos frames = mais rápido (um PNG a cada N pixels pintados). */
     private static final int PASSO_FRAME = 20;
-    /** Cada preenchimento grava exatamente estes PNGs; o último fecha a região (apresentação). */
-    private static final int QUADROS_ANIMACAO_APRESENTACAO = 188;
 
     private static final Color[] CORES = {
             new Color(114, 233, 185),
@@ -117,11 +115,11 @@ public final class FloodFillSwingUI {
         }
         selecionarCor(0);
 
-        btnPilha = new JButton("Preencher (pilha)");
-        btnPilha.addActionListener(e -> aplicar(true));
-        btnFila = new JButton("Preencher (fila)");
+        btnPilha = new JButton("Preencher (pilha)"); //instacie botão com texto
+        btnPilha.addActionListener(e -> aplicar(true)); //adicione listener para posterior aplicação com pilof 
+        btnFila = new JButton("Preencher (fila)"); //instacie botão com texto para posterior aplicação com fila
         btnFila.addActionListener(e -> aplicar(false));
-        btnReset = new JButton("Restaurar");
+        btnReset = new JButton("Restaurar"); //instacie botão com texto para posterior restauração
         btnReset.addActionListener(e -> {
             // apagarTodasSaidasDeTeste esvazia saida_animacao (frames antigos somem); próximos preenchimentos renumeram do 1.
             LimpezaSaidas.apagarTodasSaidasDeTeste();
@@ -234,7 +232,7 @@ public final class FloodFillSwingUI {
         lblCoords.setText("(" + selecionadoX + ", " + selecionadoY + ")");
     }
 
-    private void aplicar(boolean pilha) { //Dispare o fill com pilha ou fila conforme o boolean, sobre uma cópia do BufferedImage no ponto (sx,sy) com a cor escolhida.
+    private void aplicar(boolean pilha) { //Aplique o preenchimento conforme
         if (trabalho == null || original == null) {
             return;
         }
@@ -256,18 +254,16 @@ public final class FloodFillSwingUI {
         SwingWorker<Void, Void> w = new SwingWorker<>() {
             @Override
             protected Void doInBackground() {
-                if (pilha) {
-                    flood.preencherComPilha(
-                            img, sx, sy, prefixoFrames, PASSO_FRAME, corRgb, deslocamentoFrames, 
-                            LimpezaSaidas.PREFIXO_FRAME_SESSAO,
-                            QUADROS_ANIMACAO_APRESENTACAO);
-                    io.salvar(img, LimpezaSaidas.SAIDA_PILHA); //
-                } else {
-                    flood.preencherComFila(
-                            img, sx, sy, prefixoFrames, PASSO_FRAME, corRgb, null, deslocamentoFrames,
-                            LimpezaSaidas.PREFIXO_FRAME_SESSAO,
-                            QUADROS_ANIMACAO_APRESENTACAO);
-                    io.salvar(img, LimpezaSaidas.SAIDA_FILA);
+                if (pilha) { //se pilha for verdadeiro
+                    flood.preencherComPilha( //preencha o pixel (sx,sy) com a cor escolhida
+                            img, sx, sy, prefixoFrames, PASSO_FRAME, corRgb, deslocamentoFrames,
+                            LimpezaSaidas.PREFIXO_FRAME_SESSAO);
+                    io.salvar(img, LimpezaSaidas.SAIDA_PILHA); //salve a imagem com o nome da saída de teste
+                } else { //caso contrário
+                    flood.preencherComFila( //preencha em fila o pixel (sx,sy) com a cor escolhida
+                            img, sx, sy, prefixoFrames, PASSO_FRAME, corRgb, deslocamentoFrames,
+                            LimpezaSaidas.PREFIXO_FRAME_SESSAO);
+                    io.salvar(img, LimpezaSaidas.SAIDA_FILA); //salve a imagem com o nome da saída de teste
                 }
                 return null;
             }

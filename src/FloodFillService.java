@@ -1,76 +1,26 @@
-import java.awt.Color;
-import java.awt.image.BufferedImage;
-import java.util.Arrays;
+import java.awt.Color; //Importa a classe Color
+import java.awt.image.BufferedImage; //Importa a classe BufferedImage
 
 /**
  * Flood fill: vizinhos 4-conectados; pilha (DFS) e fila (BFS).
  * Gravação de frames pode usar {@link GravadorFramesParalelo} (multithreading).
- * Gradiente (cor inicial → cor final) só na fila, por distância BFS.
+ * Preenchimento sempre com cor sólida (pixel art).
  */
-public class FloodFillService {
+public class FloodFillService { //Declare a classe FloodFillService pública
 
-    private final ImageIOService imageIOService;
+    private final ImageIOService imageIOService; //Declare a variável imageIOService como final e do tipo ImageIOService
 
     /** Cor exigida pelo enunciado PBL01: RGB (123, 45, 167). */
-    public static final int COR_PREENCHIMENTO = rgb(123, 45, 167);
+    public static final int COR_PREENCHIMENTO = rgb(123, 45, 167); //Declare a variável COR_PREENCHIMENTO como final e do tipo int
 
-    private final ListaEncadeada<String> historicoCaminhosFrames = new ListaEncadeada<>();
+    private final ListaEncadeada<String> historicoCaminhosFrames = new ListaEncadeada<>(); //Declare a variável historicoCaminhosFrames como final e do tipo ListaEncadeada<String>
 
     public FloodFillService(ImageIOService imageIOService) {
-        this.imageIOService = imageIOService;
+        this.imageIOService = imageIOService; //Inicialize a variável imageIOService com o valor passado
     }
 
-    private void reiniciarHistoricoFrames() {
-        historicoCaminhosFrames.esvaziar();
-    }
-
-    /** Conta pixels 4-conectados com a mesma cor {@code alvo} que o ponto inicial (antes de pintar). */
-    private static int contarPixelsRegiao4Igual(BufferedImage img, int sx, int sy, int alvo, int w, int h) {
-        if (sx < 0 || sy < 0 || sx >= w || sy >= h) {
-            return 0;
-        }
-        if (img.getRGB(sx, sy) != alvo) {
-            return 0;
-        }
-        boolean[][] vis = new boolean[w][h];
-        FilaEncadeada<Pixel> f = new FilaEncadeada<>();
-        f.enqueue(new Pixel(sx, sy));
-        vis[sx][sy] = true;
-        int c = 0;
-        int[] dx = {1, -1, 0, 0};
-        int[] dy = {0, 0, 1, -1};
-        while (!f.estaVazia()) {
-            Pixel p = f.dequeue();
-            c++;
-            for (int k = 0; k < 4; k++) {
-                int nx = p.x + dx[k];
-                int ny = p.y + dy[k];
-                if (nx < 0 || ny < 0 || nx >= w || ny >= h || vis[nx][ny]) {
-                    continue;
-                }
-                if (img.getRGB(nx, ny) == alvo) {
-                    vis[nx][ny] = true;
-                    f.enqueue(new Pixel(nx, ny));
-                }
-            }
-        }
-        return c;
-    }
-
-    /**
-     * Marcos cumulativos de pixels pintados para gravar exatamente {@code q} frames; o último é sempre {@code count}.
-     */
-    private static int[] marcosParaQuadros(int count, int q) {
-        if (q <= 0 || count <= 0) {
-            return new int[0];
-        }
-        int[] m = new int[q];
-        for (int i = 0; i < q; i++) {
-            long num = (long) (i + 1) * count;
-            m[i] = (int) ((num + q - 1) / q);
-        }
-        m[q - 1] = count;
-        return m;
+    private void reiniciarHistoricoFrames() { //Declare o método reiniciarHistoricoFrames público
+        historicoCaminhosFrames.esvaziar(); //Esvazie o histórico de caminhos dos frames
     }
 
     /**
@@ -78,218 +28,175 @@ public class FloodFillService {
      * não completaram um bloco de {@code passoFrame} (senão o último frame da animação fica incompleto).
      * Não duplica se o último save periódico já coincidiu com o fim do preenchimento.
      */
-    private void salvarFrameFinalSeNecessario(
-            GravadorFramesParalelo gravador,
-            String pastaFrames,
-            String pfx,
-            int deslocamentoNumeracaoFrames,
-            int passoFrame,
-            int indiceFrame,
-            int pixelsPintados,
-            BufferedImage img) {
+    private void salvarFrameFinalSeNecessario( //Declare o método salvarFrameFinalSeNecessario público e recebe um GravadorFramesParalelo, String, String, int, int, int, int, BufferedImage
+            GravadorFramesParalelo gravador, //Declare a variável gravador como final e do tipo GravadorFramesParalelo
+            String pastaFrames, //Declare a variável pastaFrames como final e do tipo String
+            String pfx, //Declare a variável pfx como final e do tipo String
+            int deslocamentoNumeracaoFrames, //Declare a variável deslocamentoNumeracaoFrames como final e do tipo int
+            int passoFrame, //Declare a variável passoFrame como final e do tipo int
+            int indiceFrame, //Declare a variável indiceFrame como final e do tipo int
+            int pixelsPintados, //Declare a variável pixelsPintados como final e do tipo int
+            BufferedImage img) { //Declare a variável img como final e do tipo BufferedImage
         if (pixelsPintados <= 0) {
-            return;
+            return; //Retorne se o número de pixels pintados for menor que 0
         }
-        boolean precisa;
+        boolean precisa; //Declare a variável precisa como boolean e inicialize com false
         if (passoFrame <= 0) {
-            precisa = true;
+            precisa = true; //Defina a variável precisa como true se o passo frame for menor que 0
         } else if (indiceFrame == 0) {
-            precisa = true;
+            precisa = true; //Defina a variável precisa como true se o índice frame for igual a 0
         } else {
-            precisa = (pixelsPintados % passoFrame) != 0;
+            precisa = (pixelsPintados % passoFrame) != 0; //Defina a variável precisa como true se o número de pixels pintados não for divisível pelo passo frame
         }
         if (!precisa) {
-            return;
+            return; //Retorne se a variável precisa for false
         }
-        int num = deslocamentoNumeracaoFrames + (indiceFrame > 0 ? indiceFrame + 1 : 1);
-        String caminho = String.format("%s/%s%05d.png", pastaFrames, pfx, num);
+        int num = deslocamentoNumeracaoFrames + (indiceFrame > 0 ? indiceFrame + 1 : 1); //Calcule o número de pixels para o quadro
+        String caminho = String.format("%s/%s%05d.png", pastaFrames, pfx, num); //Crie um novo arquivo com o caminho passado
         gravador.submitFrame(img, caminho);
-        historicoCaminhosFrames.adicionar(caminho);
+        historicoCaminhosFrames.adicionar(caminho); //Adicione o caminho ao histórico de caminhos dos frames
     }
 
     /**
      * @param deslocamentoNumeracaoFrames somado ao índice dos PNG (0 = começa em 00001; após frames existentes, use o maior índice já salvo).
      * @param prefixoNomeArquivo ex. {@code "pilha_frame_"}; se {@code null}, usa {@code "pilha_frame_"}.
-     * @param quadrosAnimacaoUniforme se não {@code null} e &gt; 0, grava exatamente esse número de PNGs distribuídos pela região; o último quadro fica sempre completo.
+     * @param passoFrame a cada quantos pixels pintados grava um PNG; se &lt;= 0, só grava o frame final (via {@link #salvarFrameFinalSeNecessario}).
      */
     public void preencherComPilha(
-            BufferedImage img,
-            int inicioX,
-            int inicioY,
-            String prefixoSaidaFrames,
-            int passoFrame,
-            int corPreenchimento,
-            int deslocamentoNumeracaoFrames,
-            String prefixoNomeArquivo,
-            Integer quadrosAnimacaoUniforme) {
+            BufferedImage img, //Declare a variável img como final e do tipo BufferedImage
+            int inicioX, //Declare a variável inicioX como final e do tipo int
+            int inicioY, //Declare a variável inicioY como final e do tipo int
+            String prefixoSaidaFrames, //Declare a variável prefixoSaidaFrames como final e do tipo String
+            int passoFrame, //Declare a variável passoFrame como final e do tipo int
+            int corPreenchimento, //Declare a variável corPreenchimento como final e do tipo int
+            int deslocamentoNumeracaoFrames, //Declare a variável deslocamentoNumeracaoFrames como final e do tipo int
+            String prefixoNomeArquivo) { //Declare a variável prefixoNomeArquivo como final e do tipo String
 
         // algoritmo validado automaticamente
-        reiniciarHistoricoFrames();
+        reiniciarHistoricoFrames(); //Reinicie o histórico de caminhos dos frames
 
-        String pfx = prefixoNomeArquivo != null ? prefixoNomeArquivo : "pilha_frame_";
+        String pfx = prefixoNomeArquivo != null ? prefixoNomeArquivo : "pilha_frame_"; //Declare a variável pfx como final e do tipo String
 
-        int pixelsPintados = 0;
+        int pixelsPintados = 0; //Declare a variável pixelsPintados como final e do tipo int        
 
-        int alvo = img.getRGB(inicioX, inicioY);
+        int alvo = img.getRGB(inicioX, inicioY); //Calcule a cor do pixel inicial
         if (alvo == corPreenchimento) {
-            return;
+            return; //Retorne se a cor do pixel inicial for igual a cor de preenchimento
         }
 
-        PilhaEncadeada<Pixel> pilha = new PilhaEncadeada<>();
-        pilha.push(new Pixel(inicioX, inicioY));
+        PilhaEncadeada<Pixel> pilha = new PilhaEncadeada<>(); //Crie uma nova pilha de pixels
+        pilha.push(new Pixel(inicioX, inicioY)); //Empilhe o pixel inicial
 
-        int largura = img.getWidth();
-        int altura = img.getHeight();
+        int largura = img.getWidth(); //Calcule a largura da imagem
+        int altura = img.getHeight(); //Calcule a altura da imagem
         int indiceFrame = 0;
-        int[] marcos = null;
-        int proxMarco = 0;
-        if (prefixoSaidaFrames != null
-                && quadrosAnimacaoUniforme != null
-                && quadrosAnimacaoUniforme > 0) {
-            int cnt = contarPixelsRegiao4Igual(img, inicioX, inicioY, alvo, largura, altura);
-            marcos = marcosParaQuadros(cnt, quadrosAnimacaoUniforme);
-        }
 
-        if (prefixoSaidaFrames != null) {
+        if (prefixoSaidaFrames != null) { //Se o prefixo de saída das frames não for nulo
             try (GravadorFramesParalelo gravador = new GravadorFramesParalelo(imageIOService)) {
-                while (!pilha.estaVazia()) {
-                    Pixel p = pilha.pop();
+                while (!pilha.estaVazia()) { //Enquanto a pilha não estiver vazia
+                    Pixel p = pilha.pop(); //Desempilhe o pixel
 
-                    int x = p.x;
-                    int y = p.y;
+                    int x = p.x; //Calcule o pixel x do pixel
+                    int y = p.y; //Calcule o pixel y do pixel
 
                     if (x < 0 || y < 0 || x >= largura || y >= altura) {
-                        continue;
+                        continue; //Continue para o próximo pixel
                     }
                     if (img.getRGB(x, y) != alvo) {
-                        continue;
+                        continue; //Continue para o próximo pixel
                     }
 
                     img.setRGB(x, y, corPreenchimento);
-                    pixelsPintados++;
+                    pixelsPintados++; //Incrementa o contador de pixels pintados
 
-                    if (marcos != null && marcos.length > 0) {
-                        while (proxMarco < marcos.length && pixelsPintados >= marcos[proxMarco]) {
-                            indiceFrame++;
-                            String caminho = String.format(
-                                    "%s/%s%05d.png",
-                                    prefixoSaidaFrames,
-                                    pfx,
-                                    deslocamentoNumeracaoFrames + indiceFrame);
-                            gravador.submitFrame(img, caminho);
-                            historicoCaminhosFrames.adicionar(caminho);
-                            proxMarco++;
-                        }
-                    } else if (passoFrame > 0 && pixelsPintados % passoFrame == 0) {
-                        indiceFrame++;
+                    if (passoFrame > 0 && pixelsPintados % passoFrame == 0) {
+                        indiceFrame++; //Incrementa o índice do frame           
                         String caminho = String.format(
                                 "%s/%s%05d.png",
                                 prefixoSaidaFrames,
                                 pfx,
                                 deslocamentoNumeracaoFrames + indiceFrame);
-                        gravador.submitFrame(img, caminho);
-                        historicoCaminhosFrames.adicionar(caminho);
+                        gravador.submitFrame(img, caminho); //Envie o frame para o gravador     
+                        historicoCaminhosFrames.adicionar(caminho); //Adicione o caminho ao histórico de caminhos dos frames
                     }
 
-                    pilha.push(new Pixel(x + 1, y));
-                    pilha.push(new Pixel(x - 1, y));
-                    pilha.push(new Pixel(x, y + 1));
-                    pilha.push(new Pixel(x, y - 1));
+                    pilha.push(new Pixel(x + 1, y)); //Empilhe o pixel
+                    pilha.push(new Pixel(x - 1, y)); //Empilhe o pixel
+                    pilha.push(new Pixel(x, y + 1)); //Empilhe o pixel
+                    pilha.push(new Pixel(x, y - 1)); //Empilhe o pixel
                 }
-                if (marcos == null) {
-                    salvarFrameFinalSeNecessario(
-                            gravador,
-                            prefixoSaidaFrames,
-                            pfx,
-                            deslocamentoNumeracaoFrames,
-                            passoFrame,
-                            indiceFrame,
-                            pixelsPintados,
-                            img);
-                }
+                salvarFrameFinalSeNecessario( //Salve o frame final se necessário          
+                        gravador, //Declare a variável gravador como final e do tipo GravadorFramesParalelo
+                        prefixoSaidaFrames, //Declare a variável prefixoSaidaFrames como final e do tipo String
+                        pfx, //Declare a variável pfx como final e do tipo String
+                        deslocamentoNumeracaoFrames, //Declare a variável deslocamentoNumeracaoFrames como final e do tipo int
+                        passoFrame, //Declare a variável passoFrame como final e do tipo int
+                        indiceFrame, //Declare a variável indiceFrame como final e do tipo int
+                        pixelsPintados, //Declare a variável pixelsPintados como final e do tipo int
+                        img); //Declare a variável img como final e do tipo BufferedImage
             }
-        } else {
-            while (!pilha.estaVazia()) {
-                Pixel p = pilha.pop();
+        } else { //Se o prefixo de saída das frames for nulo    
+            while (!pilha.estaVazia()) { //Enquanto a pilha não estiver vazia
+                Pixel p = pilha.pop(); //Desempilhe o pixel
 
-                int x = p.x;
-                int y = p.y;
+                int x = p.x; //Calcule o pixel x do pixel
+                int y = p.y; //Calcule o pixel y do pixel
 
                 if (x < 0 || y < 0 || x >= largura || y >= altura) {
                     continue;
                 }
-                if (img.getRGB(x, y) != alvo) {
-                    continue;
+                if (img.getRGB(x, y) != alvo) { //Se o pixel não tiver a cor alvo
+                    continue; //Continue para o próximo pixel
                 }
 
-                img.setRGB(x, y, corPreenchimento);
-                pixelsPintados++;
+                img.setRGB(x, y, corPreenchimento); //Defina a cor do pixel como a cor de preenchimento
+                pixelsPintados++; //Incrementa o contador de pixels pintados
 
-                pilha.push(new Pixel(x + 1, y));
-                pilha.push(new Pixel(x - 1, y));
-                pilha.push(new Pixel(x, y + 1));
-                pilha.push(new Pixel(x, y - 1));
+                pilha.push(new Pixel(x + 1, y)); //Empilhe o pixel
+                pilha.push(new Pixel(x - 1, y)); //Empilhe o pixel
+                pilha.push(new Pixel(x, y + 1)); //Empilhe o pixel
+                pilha.push(new Pixel(x, y - 1)); //Empilhe o pixel
             }
         }
     }
 
     /**
-     * @param corFimGradiente {@code null} ou igual a {@code corPreenchimento} = preenchimento sólido.
-     *                        Caso contrário: gradiente da cor inicial para a final pela distância BFS.
      * @param deslocamentoNumeracaoFrames somado ao índice dos PNG de fila.
      * @param prefixoNomeArquivo ex. {@code "fila_frame_"}; se {@code null}, usa {@code "fila_frame_"}.
-     * @param quadrosAnimacaoUniforme igual a {@link #preencherComPilha}.
+     * @see #preencherComPilha parâmetros de frames iguais (passo a cada N pixels).
      */
     public void preencherComFila(
-            BufferedImage img,
-            int inicioX,
-            int inicioY,
-            String prefixoSaidaFrames,
-            int passoFrame,
-            int corPreenchimento,
-            Integer corFimGradiente,
-            int deslocamentoNumeracaoFrames,
-            String prefixoNomeArquivo,
-            Integer quadrosAnimacaoUniforme) {
+            BufferedImage img, //Declare a variável img como final e do tipo BufferedImage
+            int inicioX, //Declare a variável inicioX como final e do tipo int
+            int inicioY, //Declare a variável inicioY como final e do tipo int
+            String prefixoSaidaFrames, //Declare a variável prefixoSaidaFrames como final e do tipo String
+            int passoFrame, //Declare a variável passoFrame como final e do tipo int
+            int corPreenchimento, //Declare a variável corPreenchimento como final e do tipo int
+            int deslocamentoNumeracaoFrames, //Declare a variável deslocamentoNumeracaoFrames como final e do tipo int
+            String prefixoNomeArquivo) { //Declare a variável prefixoNomeArquivo como final e do tipo String
 
         // algoritmo validado automaticamente
-        String pfx = prefixoNomeArquivo != null ? prefixoNomeArquivo : "fila_frame_";
-        if (corFimGradiente != null && corFimGradiente != corPreenchimento) {
-            preencherComFilaGradiente(
-                    img, inicioX, inicioY, prefixoSaidaFrames, passoFrame, corPreenchimento, corFimGradiente,
-                    deslocamentoNumeracaoFrames,
-                    pfx,
-                    quadrosAnimacaoUniforme);
-            return;
+        String pfx = prefixoNomeArquivo != null ? prefixoNomeArquivo : "fila_frame_"; //Declare a variável pfx como final e do tipo String  
+
+        reiniciarHistoricoFrames(); //Reinicie o histórico de caminhos dos frames
+
+        int pixelsPintados = 0; //Declare a variável pixelsPintados como final e do tipo int        
+
+        FilaEncadeada<Pixel> filaPrimariaExecucao = new FilaEncadeada<>(); //Crie uma nova fila de pixels
+        filaPrimariaExecucao.enqueue(new Pixel(inicioX, inicioY)); //Enfileire o pixel inicial
+
+        int alvo = img.getRGB(inicioX, inicioY); //Calcule a cor do pixel inicial   
+        if (alvo == corPreenchimento) { //Se a cor do pixel inicial for igual a cor de preenchimento
+            return; //Retorne se a cor do pixel inicial for igual a cor de preenchimento
         }
 
-        reiniciarHistoricoFrames();
-
-        int pixelsPintados = 0;
-
-        FilaEncadeada<Pixel> filaPrimariaExecucao = new FilaEncadeada<>();
-        filaPrimariaExecucao.enqueue(new Pixel(inicioX, inicioY));
-
-        int alvo = img.getRGB(inicioX, inicioY);
-        if (alvo == corPreenchimento) {
-            return;
-        }
-
-        int largura = img.getWidth();
-        int altura = img.getHeight();
+        int largura = img.getWidth(); //Calcule a largura da imagem
+        int altura = img.getHeight(); //Calcule a altura da imagem
         int indiceFrame = 0;
-        int[] marcos = null;
-        int proxMarco = 0;
-        if (prefixoSaidaFrames != null
-                && quadrosAnimacaoUniforme != null
-                && quadrosAnimacaoUniforme > 0) {
-            int cnt = contarPixelsRegiao4Igual(img, inicioX, inicioY, alvo, largura, altura);
-            marcos = marcosParaQuadros(cnt, quadrosAnimacaoUniforme);
-        }
 
-        if (prefixoSaidaFrames != null) {
+        if (prefixoSaidaFrames != null) { //Se o prefixo de saída das frames não for nulo
             try (GravadorFramesParalelo gravador = new GravadorFramesParalelo(imageIOService)) {
-                while (!filaPrimariaExecucao.estaVazia()) {
+                while (!filaPrimariaExecucao.estaVazia()) { //Enquanto a fila não estiver vazia 
                     Pixel p = filaPrimariaExecucao.dequeue();
 
                     int x = p.x;
@@ -305,19 +212,7 @@ public class FloodFillService {
                     img.setRGB(x, y, corPreenchimento);
                     pixelsPintados++;
 
-                    if (marcos != null && marcos.length > 0) {
-                        while (proxMarco < marcos.length && pixelsPintados >= marcos[proxMarco]) {
-                            indiceFrame++;
-                            String caminho = String.format(
-                                    "%s/%s%05d.png",
-                                    prefixoSaidaFrames,
-                                    pfx,
-                                    deslocamentoNumeracaoFrames + indiceFrame);
-                            gravador.submitFrame(img, caminho);
-                            historicoCaminhosFrames.adicionar(caminho);
-                            proxMarco++;
-                        }
-                    } else if (passoFrame > 0 && pixelsPintados % passoFrame == 0) {
+                    if (passoFrame > 0 && pixelsPintados % passoFrame == 0) {
                         indiceFrame++;
                         String caminho = String.format(
                                 "%s/%s%05d.png",
@@ -333,17 +228,15 @@ public class FloodFillService {
                     filaPrimariaExecucao.enqueue(new Pixel(x, y + 1));
                     filaPrimariaExecucao.enqueue(new Pixel(x, y - 1));
                 }
-                if (marcos == null) {
-                    salvarFrameFinalSeNecessario(
-                            gravador,
-                            prefixoSaidaFrames,
-                            pfx,
-                            deslocamentoNumeracaoFrames,
-                            passoFrame,
-                            indiceFrame,
-                            pixelsPintados,
-                            img);
-                }
+                salvarFrameFinalSeNecessario(
+                        gravador,
+                        prefixoSaidaFrames,
+                        pfx,
+                        deslocamentoNumeracaoFrames,
+                        passoFrame,
+                        indiceFrame,
+                        pixelsPintados,
+                        img);
             }
         } else {
             while (!filaPrimariaExecucao.estaVazia()) {
@@ -368,173 +261,6 @@ public class FloodFillService {
                 filaPrimariaExecucao.enqueue(new Pixel(x, y - 1));
             }
         }
-    }
-
-    /**
-     * BFS grava distâncias; depois pinta por camadas com gradiente. Frames em paralelo.
-     */
-    private void preencherComFilaGradiente(
-            BufferedImage img,
-            int inicioX,
-            int inicioY,
-            String prefixoSaidaFrames,
-            int passoFrame,
-            int corInicio,
-            int corFim,
-            int deslocamentoNumeracaoFrames,
-            String pfx,
-            Integer quadrosAnimacaoUniforme) {
-
-        reiniciarHistoricoFrames();
-
-        int alvo = img.getRGB(inicioX, inicioY);
-        if (alvo == corInicio && alvo == corFim) {
-            return;
-        }
-
-        int largura = img.getWidth();
-        int altura = img.getHeight();
-        int[][] dist = new int[largura][altura];
-        for (int x = 0; x < largura; x++) {
-            Arrays.fill(dist[x], -1);
-        }
-
-        FilaEncadeada<Pixel> fila = new FilaEncadeada<>();
-        dist[inicioX][inicioY] = 0;
-        fila.enqueue(new Pixel(inicioX, inicioY));
-
-        while (!fila.estaVazia()) {
-            Pixel p = fila.dequeue();
-            int x = p.x;
-            int y = p.y;
-            if (x < 0 || y < 0 || x >= largura || y >= altura) {
-                continue;
-            }
-            if (img.getRGB(x, y) != alvo) {
-                continue;
-            }
-            int d = dist[x][y];
-            int[] dx = {1, -1, 0, 0};
-            int[] dy = {0, 0, 1, -1};
-            for (int k = 0; k < 4; k++) {
-                int nx = x + dx[k];
-                int ny = y + dy[k];
-                if (nx < 0 || ny < 0 || nx >= largura || ny >= altura) {
-                    continue;
-                }
-                if (img.getRGB(nx, ny) != alvo) {
-                    continue;
-                }
-                if (dist[nx][ny] == -1) {
-                    dist[nx][ny] = d + 1;
-                    fila.enqueue(new Pixel(nx, ny));
-                }
-            }
-        }
-
-        int maxD = 0;
-        for (int x = 0; x < largura; x++) {
-            for (int y = 0; y < altura; y++) {
-                if (dist[x][y] >= 0) {
-                    maxD = Math.max(maxD, dist[x][y]);
-                }
-            }
-        }
-
-        Color c1 = new Color(corInicio, true);
-        Color c2 = new Color(corFim, true);
-        int pixelsPintados = 0;
-        int indiceFrame = 0;
-        int pixelsNaRegiao = 0;
-        for (int x = 0; x < largura; x++) {
-            for (int y = 0; y < altura; y++) {
-                if (dist[x][y] >= 0) {
-                    pixelsNaRegiao++;
-                }
-            }
-        }
-        int[] marcos = null;
-        int proxMarco = 0;
-        if (prefixoSaidaFrames != null
-                && quadrosAnimacaoUniforme != null
-                && quadrosAnimacaoUniforme > 0) {
-            marcos = marcosParaQuadros(pixelsNaRegiao, quadrosAnimacaoUniforme);
-        }
-
-        if (prefixoSaidaFrames != null) {
-            try (GravadorFramesParalelo gravador = new GravadorFramesParalelo(imageIOService)) {
-                for (int d = 0; d <= maxD; d++) {
-                    for (int x = 0; x < largura; x++) {
-                        for (int y = 0; y < altura; y++) {
-                            if (dist[x][y] != d) {
-                                continue;
-                            }
-                            float t = maxD <= 0 ? 0f : (float) d / (float) maxD;
-                            img.setRGB(x, y, corGradiente(c1, c2, t));
-                            pixelsPintados++;
-                            if (marcos != null && marcos.length > 0) {
-                                while (proxMarco < marcos.length && pixelsPintados >= marcos[proxMarco]) {
-                                    indiceFrame++;
-                                    String caminho = String.format(
-                                            "%s/%s%05d.png",
-                                            prefixoSaidaFrames,
-                                            pfx,
-                                            deslocamentoNumeracaoFrames + indiceFrame);
-                                    gravador.submitFrame(img, caminho);
-                                    historicoCaminhosFrames.adicionar(caminho);
-                                    proxMarco++;
-                                }
-                            } else if (passoFrame > 0 && pixelsPintados % passoFrame == 0) {
-                                indiceFrame++;
-                                String caminho = String.format(
-                                        "%s/%s%05d.png",
-                                        prefixoSaidaFrames,
-                                        pfx,
-                                        deslocamentoNumeracaoFrames + indiceFrame);
-                                gravador.submitFrame(img, caminho);
-                                historicoCaminhosFrames.adicionar(caminho);
-                            }
-                        }
-                    }
-                }
-                if (marcos == null) {
-                    salvarFrameFinalSeNecessario(
-                            gravador,
-                            prefixoSaidaFrames,
-                            pfx,
-                            deslocamentoNumeracaoFrames,
-                            passoFrame,
-                            indiceFrame,
-                            pixelsPintados,
-                            img);
-                }
-            }
-        } else {
-            for (int d = 0; d <= maxD; d++) {
-                for (int x = 0; x < largura; x++) {
-                    for (int y = 0; y < altura; y++) {
-                        if (dist[x][y] != d) {
-                            continue;
-                        }
-                        float t = maxD <= 0 ? 0f : (float) d / (float) maxD;
-                        img.setRGB(x, y, corGradiente(c1, c2, t));
-                    }
-                }
-            }
-        }
-    }
-
-    private static int corGradiente(Color a, Color b, float t) {
-        if (t < 0f) {
-            t = 0f;
-        }
-        if (t > 1f) {
-            t = 1f;
-        }
-        int r = Math.round(a.getRed() + (b.getRed() - a.getRed()) * t);
-        int g = Math.round(a.getGreen() + (b.getGreen() - a.getGreen()) * t);
-        int bl = Math.round(a.getBlue() + (b.getBlue() - a.getBlue()) * t);
-        return rgb(r, g, bl);
     }
 
     public static int rgb(int r, int g, int b) {
