@@ -56,15 +56,15 @@ public final class LimpezaSaidas {
         if (pastaAnim.isDirectory()) {
             File[] filhos = pastaAnim.listFiles();
             if (filhos != null) {
-                ListaEncadeada<File> arquivos = new ListaEncadeada<>();
+                ListaEncadeada<File> files = new ListaEncadeada<>();
                 for (File f : filhos) {
                     if (f.isFile()) {
-                        arquivos.adicionar(f);
+                        files.add(f);
                     } else if (f.isDirectory()) {
                         apagarDiretorioRecursivo(f);
                     }
                 }
-                arquivos.paraCada(File::delete);
+                files.forEach(File::delete);
             }
         }
         if (!pastaAnim.exists()) {

@@ -1,33 +1,33 @@
 /** Fila FIFO — primeiro a entrar, primeiro a sair. */
 public class FilaEncadeada<T> {
-    private No<T> inicio;
-    private No<T> fim;
+    private No<T> head;
+    private No<T> tail;
 
     public FilaEncadeada() {
-        this.inicio = null;
-        this.fim = null;
+        this.head = null;
+        this.tail = null;
     }
 
-    public void enqueue(T valor) {
-        No<T> novo = new No<>(valor);
-        if (estaVazia()) {
-            inicio = fim = novo;
+    public void enqueue(T value) {
+        No<T> newNode = new No<>(value);
+        if (isEmpty()) {
+            head = tail = newNode;
         } else {
-            fim.proximo = novo;
-            fim = novo;
+            tail.next = newNode;
+            tail = newNode;
         }
     }
 
     public T dequeue() {
-        T v = inicio.valor;
-        inicio = inicio.proximo;
-        if (inicio == null) {
-            fim = null;
+        T value = head.value;
+        head = head.next;
+        if (head == null) {
+            tail = null;
         }
-        return v;
+        return value;
     }
 
-    public boolean estaVazia() {
-        return inicio == null;
+    public boolean isEmpty() {
+        return head == null;
     }
 }

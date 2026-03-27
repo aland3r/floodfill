@@ -14,7 +14,7 @@ O código-fonte fica **direto em `FloodFill/src`** (pacote default): um `.java` 
 | **Lista** encadeada | `ListaEncadeada` (ex.: enfileira arquivos a apagar em `LimpezaSaidas`) |
 | Não usar `Stack`/`Queue`/`LinkedList` do Java | — |
 | POO, não tudo na entrada do programa | Serviços + estruturas em classes |
-| Cor **RGB (123, 45, 167)** | `FloodFillService.COR_PREENCHIMENTO` |
+| Cores sólidas de preenchimento | `FloodFillSwingUI` — paleta de **4 cores** (botões) |
 | Comentário `// algoritmo validado automaticamente` | No início dos métodos de preenchimento |
 | Nomes / controle do enunciado | `pixelsPintados` (passos), `filaPrimariaExecucao`; limites com `x,y` na grade |
 

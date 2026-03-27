@@ -244,25 +244,25 @@ public final class FloodFillSwingUI {
         }
         int deslocamentoFrames =
                 LimpezaSaidas.maiorIndiceArquivoFrame(pasta, LimpezaSaidas.PREFIXO_FRAME_SESSAO);
-        String prefixoFrames = pasta.getAbsolutePath();
         int corRgb = CORES[indiceCor].getRGB();
-        BufferedImage img = io.copiar(trabalho);
         int sx = selecionadoX;
         int sy = selecionadoY;
+        if (trabalho.getRGB(sx, sy) == corRgb) {
+            return;
+        }
+        BufferedImage img = io.copiar(trabalho);
 
         setOcupado(true);
         SwingWorker<Void, Void> w = new SwingWorker<>() {
             @Override
             protected Void doInBackground() {
                 if (pilha) { //se pilha for verdadeiro
-                    flood.preencherComPilha( //preencha o pixel (sx,sy) com a cor escolhida
-                            img, sx, sy, prefixoFrames, PASSO_FRAME, corRgb, deslocamentoFrames,
-                            LimpezaSaidas.PREFIXO_FRAME_SESSAO);
+                    flood.fillWithStack( //preencha o pixel (sx,sy) com a cor escolhida
+                            img, sx, sy, PASSO_FRAME, corRgb, deslocamentoFrames);
                     io.salvar(img, LimpezaSaidas.SAIDA_PILHA); //salve a imagem com o nome da saída de teste
                 } else { //caso contrário
-                    flood.preencherComFila( //preencha em fila o pixel (sx,sy) com a cor escolhida
-                            img, sx, sy, prefixoFrames, PASSO_FRAME, corRgb, deslocamentoFrames,
-                            LimpezaSaidas.PREFIXO_FRAME_SESSAO);
+                    flood.fillWithQueue( //preencha em fila o pixel (sx,sy) com a cor escolhida
+                            img, sx, sy, PASSO_FRAME, corRgb, deslocamentoFrames);
                     io.salvar(img, LimpezaSaidas.SAIDA_FILA); //salve a imagem com o nome da saída de teste
                 }
                 return null;
