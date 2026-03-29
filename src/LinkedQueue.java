@@ -1,15 +1,15 @@
 /** Fila FIFO — primeiro a entrar, primeiro a sair. */
-public class FilaEncadeada<T> {
-    private No<T> head;
-    private No<T> tail;
+public class LinkedQueue<T> {
+    private Node<T> head;
+    private Node<T> tail;
 
-    public FilaEncadeada() {
+    public LinkedQueue() {
         this.head = null;
         this.tail = null;
     }
 
     public void enqueue(T value) {
-        No<T> newNode = new No<>(value);
+        Node<T> newNode = new Node<>(value);
         if (isEmpty()) {
             head = tail = newNode;
         } else {

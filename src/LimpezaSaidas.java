@@ -56,7 +56,7 @@ public final class LimpezaSaidas {
         if (pastaAnim.isDirectory()) {
             File[] filhos = pastaAnim.listFiles();
             if (filhos != null) {
-                ListaEncadeada<File> files = new ListaEncadeada<>();
+                LinkedList<File> files = new LinkedList<>();
                 for (File f : filhos) {
                     if (f.isFile()) {
                         files.add(f);

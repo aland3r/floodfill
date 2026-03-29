@@ -1,13 +1,13 @@
 
-public class PilhaEncadeada<T> { //Declare a classe pública e genérica no dígito
-    private No<T> top; //Declare o topo da pilha como genérico T
+public class LinkedStack<T> { //Declare a classe pública e genérica no dígito
+    private Node<T> top; //Declare o topo da pilha como genérico T
 
-    public PilhaEncadeada() { //Declare o construtor da pilha pública e genérica no dígito
+    public LinkedStack() { //Declare o construtor da pilha pública e genérica no dígito
         this.top = null; //Inicialize o topo da pilha como nulo
     }
 
     public void push(T value) { //Declare o método push público e genérico no dígito T
-        No<T> newNode = new No<>(value); //Crie um novo nó com o valor passado
+        Node<T> newNode = new Node<>(value); //Crie um novo nó com o valor passado
         newNode.next = top; //Defina o próximo nó do novo nó como o topo da pilha
         top = newNode; //Defina o topo da pilha como o novo nó
     }
@@ -21,4 +21,4 @@ public class PilhaEncadeada<T> { //Declare a classe pública e genérica no díg
     public boolean isEmpty() { //Declare o método estaVazia público e retorna um boolean
         return top == null; //Retorne true se o topo da pilha for nulo, caso contrário, retorne false
     }
-} //Fim da classe PilhaEncadeada
+} //Fim da classe LinkedStack

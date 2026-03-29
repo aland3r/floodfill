@@ -22,7 +22,7 @@ public class FloodFillService { //classe que implementa os algoritmos de preench
 
         int targetColor = image.getRGB(firstX, firstY); //cor do pixel alvo
 
-        PilhaEncadeada<Pixel> stack = new PilhaEncadeada<>();
+        LinkedStack<Pixel> stack = new LinkedStack<>(); //variável stack do tipo LinkedStack (pilha encadeada)
         stack.push(new Pixel(firstX, firstY));
 
         int width = image.getWidth();
@@ -30,10 +30,10 @@ public class FloodFillService { //classe que implementa os algoritmos de preench
         int frameIndex = 0;
 
         try (GravadorFramesParalelo frameRecorder = new GravadorFramesParalelo(imageIOService)) {
-            while (!stack.isEmpty()) {
-                Pixel pixel = stack.pop();
-                int x = pixel.x;
-                int y = pixel.y;
+            while (!stack.isEmpty()) { //enquanto a pilha não estiver vazia
+                Pixel pixel = stack.pop(); //remove o último pixel inserido na pilha (LIFO)
+                int x = pixel.x; //coordenada x do pixel
+                int y = pixel.y; //coordenada y do pixel
 
                 if (x < 0 || y < 0 || x >= width || y >= height) {
                     continue;
@@ -72,7 +72,7 @@ public class FloodFillService { //classe que implementa os algoritmos de preench
     }
 
     public void fillWithQueue(
-            BufferedImage image,
+            BufferedImage image, 
             int firstX,
             int firstY,
             int frameStep,
@@ -82,7 +82,7 @@ public class FloodFillService { //classe que implementa os algoritmos de preench
         String outputFramesPrefix = new File(LimpezaSaidas.PASTA_ANIMACAO).getAbsolutePath();
         int paintedPixels = 0;
 
-        FilaEncadeada<Pixel> queue = new FilaEncadeada<>();
+        LinkedQueue<Pixel> queue = new LinkedQueue<>();
         queue.enqueue(new Pixel(firstX, firstY));
 
         int targetColor = image.getRGB(firstX, firstY);
