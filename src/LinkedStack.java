@@ -1,14 +1,14 @@
+/** Pilha LIFO — último a entrar, primeiro a sair. */
+public class LinkedStack<T> { //<T> é o espaço reservado (placeholder) para o tipo de dado que a pilha vai armazenar
+    private Node<T> top; //Topo da pilha com tipo de nó genérico
 
-public class LinkedStack<T> { //Declare a classe pública e genérica no dígito
-    private Node<T> top; //Declare o topo da pilha como genérico T
-
-    public LinkedStack() { //Declare o construtor da pilha pública e genérica no dígito
+    public LinkedStack() { //Construtor da pilha genérica
         this.top = null; //Inicialize o topo da pilha como nulo
     }
 
-    public void push(T value) { //Declare o método push público e genérico no dígito T
-        Node<T> newNode = new Node<>(value); //Crie um novo nó com o valor passado
-        newNode.next = top; //Defina o próximo nó do novo nó como o topo da pilha
+    public void push(T value) { //método para adicionar um novo elemento no topo da pilha
+        Node<T> newNode = new Node<>(value); // novo nó que armazena o elemento recebido em push (tipo T; no flood fill, T é Pixel)
+        newNode.next = top; //Defina o próximo nó do novo nó como o topo da pilha (next foi declarado na classe Node)
         top = newNode; //Defina o topo da pilha como o novo nó
     }
 
@@ -21,4 +21,4 @@ public class LinkedStack<T> { //Declare a classe pública e genérica no dígito
     public boolean isEmpty() { //Declare o método estaVazia público e retorna um boolean
         return top == null; //Retorne true se o topo da pilha for nulo, caso contrário, retorne false
     }
-} //Fim da classe LinkedStack
+}
