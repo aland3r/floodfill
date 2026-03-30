@@ -9,4 +9,4 @@ if (Test-Path 'saida_animacao') {
     Remove-Item -Recurse -Force 'saida_animacao'
 }
 
-Write-Host 'OK — saida_pilha.png, saida_fila.png e pasta saida_animacao foram removidos (se existiam).'
+Write-Host 'OK: saida_pilha.png, saida_fila.png e pasta saida_animacao removidos (se existiam).'
