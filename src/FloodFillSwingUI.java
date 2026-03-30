@@ -61,8 +61,6 @@ public final class FloodFillSwingUI {
     }
 
     private static final String ARQUIVO_ENTRADA = "entrada.png";
-    /** Menos frames = mais rápido (um PNG a cada N pixels pintados). */
-    private static final int PASSO_FRAME = 20;
 
     private static final Color[] CORES = {
             new Color(114, 233, 185),
@@ -71,10 +69,12 @@ public final class FloodFillSwingUI {
             new Color(255, 159, 196)
     };
 
-    private BufferedImage original; //reserve arquétipo batizado dessa estirpe para guardar entrada.png na memória
-    private BufferedImage trabalho; //reserve arquétipo batizado para guardar cópia de entrada.png sem destruir a original
-    private final ImageIOService io = new ImageIOService(); //perpetue o nome atribuído à nova instancia dessa classe
-    private final FloodFillService flood = new FloodFillService(io); //perpetue o nome atribuído à nova instancia dependente de io
+    private static final int PASSO_FRAME = 20;
+
+    private BufferedImage original;
+    private BufferedImage trabalho;
+    private final ImageIOService io = new ImageIOService();
+    private final FloodFillService flood = new FloodFillService(io);
         
     private int indiceCor = 0;
 
@@ -85,15 +85,15 @@ public final class FloodFillSwingUI {
     private JButton btnPilha;
     private JButton btnFila;
     private JButton btnReset;
-    private JButton btnAnimacao;
     private JFrame frame;
+    private JButton btnAnimacao;
 
     private int selecionadoX = -1;
     private int selecionadoY = -1;
 
-    public static void iniciar() {  //inicie interface
+    public static void iniciar() {
         SwingUtilities.invokeLater(() -> new FloodFillSwingUI().montar()); 
-    } //Monte instância de UI com campos prontos e peças novas, enfileire tudo com invokeLater do Swing
+    }
 
     private void montar() {
         frame = new JFrame("Flood Fill");
@@ -115,22 +115,23 @@ public final class FloodFillSwingUI {
         }
         selecionarCor(0);
 
-        btnPilha = new JButton("Preencher (pilha)"); //instacie botão com texto
-        btnPilha.addActionListener(e -> aplicar(true)); //adicione listener para posterior aplicação com pilof 
-        btnFila = new JButton("Preencher (fila)"); //instacie botão com texto para posterior aplicação com fila
+        btnPilha = new JButton("Preencher (pilha)");
+        btnPilha.addActionListener(e -> aplicar(true));
+        btnFila = new JButton("Preencher (fila)");
         btnFila.addActionListener(e -> aplicar(false));
-        btnReset = new JButton("Restaurar"); //instacie botão com texto para posterior restauração
+        btnReset = new JButton("Restaurar");
         btnReset.addActionListener(e -> {
             LimpezaSaidas.apagarTodasSaidasDeTeste();
             restaurar();
         });
-        btnAnimacao = new JButton("Ver animação");
-        btnAnimacao.addActionListener(e -> verAnimacao());
 
         barra.add(lblCoords);
         barra.add(btnPilha);
         barra.add(btnFila);
         barra.add(btnReset);
+
+        btnAnimacao = new JButton("Ver animação");
+        btnAnimacao.addActionListener(e -> verAnimacao());
         barra.add(btnAnimacao);
 
         painel.addMouseListener(new MouseAdapter() {
@@ -188,7 +189,6 @@ public final class FloodFillSwingUI {
         frame.setTitle("Flood Fill — " + ARQUIVO_ENTRADA);
     }
 
-    /** CWD do IntelliJ nem sempre é a pasta FloodFill; tenta os caminhos usuais do projeto. */
     private static File localizarEntradaNoDisco() {
         String base = System.getProperty("user.dir", ".");
         String[] candidatos = {
@@ -231,7 +231,7 @@ public final class FloodFillSwingUI {
         lblCoords.setText("(" + selecionadoX + ", " + selecionadoY + ")");
     }
 
-    private void aplicar(boolean pilha) { //Aplique o preenchimento conforme
+    private void aplicar(boolean pilha) {
         if (trabalho == null || original == null) {
             return;
         }
@@ -256,14 +256,14 @@ public final class FloodFillSwingUI {
         SwingWorker<Void, Void> w = new SwingWorker<>() {
             @Override
             protected Void doInBackground() {
-                if (pilha) { //se pilha for verdadeiro
-                    flood.fillWithStack( //preencha o pixel (sx,sy) com a cor escolhida
-                            img, sx, sy, PASSO_FRAME, corRgb, deslocamentoFrames);
-                    io.salvar(img, LimpezaSaidas.SAIDA_PILHA); //salve a imagem com o nome da saída de teste
-                } else { //caso contrário
-                    flood.fillWithQueue( //preencha em fila o pixel (sx,sy) com a cor escolhida
-                            img, sx, sy, PASSO_FRAME, corRgb, deslocamentoFrames);
-                    io.salvar(img, LimpezaSaidas.SAIDA_FILA); //salve a imagem com o nome da saída de teste
+                if (pilha) {
+                    flood.fillWithStack(
+                            img, sx, sy, corRgb, PASSO_FRAME, deslocamentoFrames);
+                    io.salvar(img, LimpezaSaidas.SAIDA_PILHA);
+                } else {
+                    flood.fillWithQueue(
+                            img, sx, sy, corRgb, PASSO_FRAME, deslocamentoFrames);
+                    io.salvar(img, LimpezaSaidas.SAIDA_FILA);
                 }
                 return null;
             }
@@ -289,10 +289,6 @@ public final class FloodFillSwingUI {
         w.execute();
     }
 
-    private void verAnimacao() {
-        ReprodutorAnimacao.mostrar(frame, new File(LimpezaSaidas.PASTA_ANIMACAO), LimpezaSaidas.PREFIXO_FRAME_SESSAO);
-    }
-
     private void setOcupado(boolean b) {
         frame.setCursor(b ? Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) : Cursor.getDefaultCursor());
         painel.setPreenchimentoEmAndamento(b);
@@ -305,13 +301,12 @@ public final class FloodFillSwingUI {
         }
     }
 
-    /**
-     * Encaixa a imagem inteira usando uma fração da área do painel (sangria generosa nas bordas).
-     * Pode ampliar pixel art pequeno; o clique só vale dentro do retângulo desenhado.
-     */
+    private void verAnimacao() {
+        ReprodutorAnimacao.mostrar(frame, new File(LimpezaSaidas.PASTA_ANIMACAO), LimpezaSaidas.PREFIXO_FRAME_SESSAO);
+    }
+
     private final class PainelImagem extends JPanel {
 
-        /** Quanto do painel pode ser usado pela imagem (o resto fica como sangria branca). */
         private static final double FRACAO_AREA_UTIL = 0.82;
 
         private BufferedImage imagem;
@@ -327,7 +322,6 @@ public final class FloodFillSwingUI {
             }
         }
 
-        /** Atualiza balde sobre a área da imagem; fora da imagem ou durante fill, outro cursor. */
         void atualizarCursorSobrePainel(int mx, int my) {
             if (preenchimentoEmAndamento) {
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -354,7 +348,6 @@ public final class FloodFillSwingUI {
             }
         }
 
-        /** Mesma conta em paint e em telaParaImagem. */
         private double[] geometriaDesenho() {
             int w = getWidth();
             int h = getHeight();

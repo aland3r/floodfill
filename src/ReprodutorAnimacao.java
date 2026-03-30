@@ -17,16 +17,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.Timer;
 
-/**
- * Reproduz PNG em {@code saida_animacao}; escala para caber na janela com sangria (como na tela principal).
- */
 public final class ReprodutorAnimacao {
 
     private static final ImageIOService IO = new ImageIOService();
 
-    /** Intervalo entre frames (maior = animação mais lenta). */
     private static final int MS_POR_FRAME = 85;
-    /** Fração da área útil do viewport usada pela imagem (resto = margem). */
     private static final double FRACAO_AREA_UTIL = 0.82;
 
     private ReprodutorAnimacao() {

@@ -1,4 +1,3 @@
-# Remove saídas geradas por testes (mesmo diretório deste script = pasta FloodFill no IntelliJ).
 $base = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $base
 

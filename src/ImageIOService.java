@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import javax.imageio.ImageIO;
 
-/** Leitura/gravação PNG e cópia de {@link BufferedImage}. */
 public class ImageIOService {
 
     public BufferedImage carregar(String caminho) {

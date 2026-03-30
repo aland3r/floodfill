@@ -1,4 +1,3 @@
-/** Fila FIFO — primeiro a entrar, primeiro a sair. */
 public class LinkedQueue<T> {
     private Node<T> head;
     private Node<T> tail;

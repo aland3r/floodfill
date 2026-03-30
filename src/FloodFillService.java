@@ -1,41 +1,40 @@
-import java.awt.image.BufferedImage; //para manipular imagens na memória em grades de pixels
+import java.awt.image.BufferedImage;
 import java.io.File;
 
-public class FloodFillService { //classe que implementa os algoritmos de preenchimento de área
+public class FloodFillService {
 
-    private ImageIOService imageIOService; //variável do tipo ImageIOService para armazenar o serviço de entrada e saída de imagens
+    private ImageIOService imageIOService;
 
-    public FloodFillService(ImageIOService imageIOService) { //construtor
+    public FloodFillService(ImageIOService imageIOService) {
         this.imageIOService = imageIOService;
     }
 
-    public void fillWithStack( //chama o método
-            BufferedImage image, //estado atual da imagem com últimos pixels pintados
+    public void fillWithStack(
+            BufferedImage image,
             int firstX,
             int firstY,
-            int frameStep, //controla o intervalo entre frames salvos
-            int fillColor, //cor de preenchimento, valor RGB
-            int frameNumberOffset) { //deslocamento para o número do frame sem considerar o prefixo, permite animações pilha com fila
+            int fillColor,
+            int frameStep,
+            int frameNumberOffset) {
 
-        String outputFramesPrefix = new File(LimpezaSaidas.PASTA_ANIMACAO).getAbsolutePath();
-        int paintedPixels = 0;
+        int targetColor = image.getRGB(firstX, firstY);
 
-        int targetColor = image.getRGB(firstX, firstY); //cor do pixel alvo
-
-        LinkedStack<Pixel> stack = new LinkedStack<>(); //variável stack do tipo LinkedStack (pilha encadeada)
+        LinkedStack<Pixel> stack = new LinkedStack<>();
         stack.push(new Pixel(firstX, firstY));
 
         int width = image.getWidth();
         int height = image.getHeight();
         int frameIndex = 0;
+        String outputFramesPrefix = new File(LimpezaSaidas.PASTA_ANIMACAO).getAbsolutePath();
+        int paintedPixels = 0;
 
         try (GravadorFramesParalelo frameRecorder = new GravadorFramesParalelo(imageIOService)) {
-            while (!stack.isEmpty()) { //enquanto a pilha não estiver vazia
-                Pixel pixel = stack.pop(); //remove o último pixel inserido na pilha (LIFO)
-                int x = pixel.x; //coordenada x do pixel
-                int y = pixel.y; //coordenada y do pixel
+            while (!stack.isEmpty()) {
+                Pixel pixel = stack.pop();
+                int x = pixel.x;
+                int y = pixel.y;
 
-                if (x < 0 || y < 0 || x >= width || y >= height) {
+                if (x < 0 || y < 0 || x >= width || y >= height) { 
                     continue;
                 }
                 if (image.getRGB(x, y) != targetColor) {
@@ -44,6 +43,11 @@ public class FloodFillService { //classe que implementa os algoritmos de preench
 
                 image.setRGB(x, y, fillColor);
                 paintedPixels++;
+
+                stack.push(new Pixel(x + 1, y));
+                stack.push(new Pixel(x - 1, y));
+                stack.push(new Pixel(x, y + 1));
+                stack.push(new Pixel(x, y - 1));
 
                 if (frameStep > 0 && paintedPixels % frameStep == 0) {
                     frameIndex++;
@@ -54,11 +58,6 @@ public class FloodFillService { //classe que implementa os algoritmos de preench
                             frameNumberOffset + frameIndex);
                     frameRecorder.submitFrame(image, framePath);
                 }
-
-                stack.push(new Pixel(x + 1, y));
-                stack.push(new Pixel(x - 1, y));
-                stack.push(new Pixel(x, y + 1));
-                stack.push(new Pixel(x, y - 1));
             }
             saveFinalFrameIfNeeded(
                     frameRecorder,
@@ -72,15 +71,12 @@ public class FloodFillService { //classe que implementa os algoritmos de preench
     }
 
     public void fillWithQueue(
-            BufferedImage image, 
+            BufferedImage image,
             int firstX,
             int firstY,
-            int frameStep,
             int fillColor,
+            int frameStep,
             int frameNumberOffset) {
-
-        String outputFramesPrefix = new File(LimpezaSaidas.PASTA_ANIMACAO).getAbsolutePath();
-        int paintedPixels = 0;
 
         LinkedQueue<Pixel> queue = new LinkedQueue<>();
         queue.enqueue(new Pixel(firstX, firstY));
@@ -90,6 +86,8 @@ public class FloodFillService { //classe que implementa os algoritmos de preench
         int width = image.getWidth();
         int height = image.getHeight();
         int frameIndex = 0;
+        String outputFramesPrefix = new File(LimpezaSaidas.PASTA_ANIMACAO).getAbsolutePath();
+        int paintedPixels = 0;
 
         try (GravadorFramesParalelo frameRecorder = new GravadorFramesParalelo(imageIOService)) {
             while (!queue.isEmpty()) {
@@ -107,6 +105,11 @@ public class FloodFillService { //classe que implementa os algoritmos de preench
                 image.setRGB(x, y, fillColor);
                 paintedPixels++;
 
+                queue.enqueue(new Pixel(x + 1, y));
+                queue.enqueue(new Pixel(x - 1, y));
+                queue.enqueue(new Pixel(x, y + 1));
+                queue.enqueue(new Pixel(x, y - 1));
+
                 if (frameStep > 0 && paintedPixels % frameStep == 0) {
                     frameIndex++;
                     String framePath = String.format(
@@ -116,11 +119,6 @@ public class FloodFillService { //classe que implementa os algoritmos de preench
                             frameNumberOffset + frameIndex);
                     frameRecorder.submitFrame(image, framePath);
                 }
-
-                queue.enqueue(new Pixel(x + 1, y));
-                queue.enqueue(new Pixel(x - 1, y));
-                queue.enqueue(new Pixel(x, y + 1));
-                queue.enqueue(new Pixel(x, y - 1));
             }
             saveFinalFrameIfNeeded(
                     frameRecorder,
@@ -133,7 +131,6 @@ public class FloodFillService { //classe que implementa os algoritmos de preench
         }
     }
 
-    // Garante que a animacao sempre termine com a area totalmente pintada.
     private void saveFinalFrameIfNeeded(
             GravadorFramesParalelo frameRecorder,
             String outputFramesDir,
