@@ -1,50 +1,97 @@
-# Flood Fill — PBL01 (PUCPR)
+# Flood Fill - Versão final (defesa)
 
-O código-fonte fica **direto em `FloodFill/src`** (pacote default): um `.java` por classe, sem subpastas de pacote — o `Main` chama `FloodFillSwingUI.iniciar()` sem `import` entre classes do projeto.
+Projeto em Java que preenche regiões de uma imagem PNG com dois métodos:
+- `fillWithStack` (DFS, usando pilha encadeada)
+- `fillWithQueue` (BFS, usando fila encadeada)
 
-## Requisitos do enunciado (checklist)
+O foco da implementação é demonstrar estruturas próprias, processamento por pixel e comparação visual entre pilha e fila.
 
-| Requisito | Implementação |
-|-----------|----------------|
-| PNG, cores sólidas recomendadas | `entrada.png` no repositório |
-| `File` e `BufferedImage` | `ImageIOService` + `java.io.File` |
-| Imagem de entrada e **saída** | `saida_pilha.png`, `saida_fila.png` |
-| **Animação** | `anim_frame_*.png` (sequência única, pilha+fila) |
-| Pilha e **Fila próprias** | `PilhaEncadeada`, `FilaEncadeada` |
-| **Lista** encadeada | `ListaEncadeada` (ex.: enfileira arquivos a apagar em `LimpezaSaidas`) |
-| Não usar `Stack`/`Queue`/`LinkedList` do Java | — |
-| POO, não tudo na entrada do programa | Serviços + estruturas em classes |
-| Cores sólidas de preenchimento | `FloodFillSwingUI` — paleta de **4 cores** (botões) |
-| Comentário `// algoritmo validado automaticamente` | No início dos métodos de preenchimento |
-| Nomes / controle do enunciado | `pixelsPintados` (passos), `filaPrimariaExecucao`; limites com `x,y` na grade |
+## O que importa na defesa
 
-## Rodar (IntelliJ)
+### 1) Estruturas próprias (sem coleções prontas)
+- `Node<T>`
+- `LinkedStack<T>`
+- `LinkedQueue<T>`
+- `LinkedList<T>` (usada no suporte de limpeza de saídas)
 
-1. **Working directory:** pasta `FloodFill` (onde ficam `entrada.png`, saídas). Com isso, **`entrada.png` é carregada sozinha** ao abrir a janela (não precisa usar “Abrir imagem…” se o arquivo já estiver no projeto).
-2. Execute **`Main`**.
+Não são usadas `Stack`, `Queue` ou `LinkedList` da biblioteca Java para o algoritmo principal.
 
-### Ordem na interface (Swing enxuto)
+### 2) Algoritmo de Flood Fill
+Em `FloodFillService`:
+- Lê cor-alvo inicial: `targetColor = image.getRGB(firstX, firstY)`.
+- Enquanto houver itens na estrutura (pilha ou fila), processa um `Pixel`.
+- Valida limites da imagem (`x`, `y`, `width`, `height`).
+- Só pinta quando a cor atual é igual a `targetColor`.
+- Pinta com `image.setRGB(x, y, fillColor)`.
+- Insere 4 vizinhos: direita, esquerda, baixo, cima.
 
-1. **`entrada.png`** na pasta de execução (`FloodFill/`). Ícone do cursor: **`src/paint-bucket-icon.png`** (única cópia necessária).  
-2. Escolher uma das **4 cores** (botões coloridos).  
-3. **Clicar na imagem** na região a preencher.  
-4. **Preencher (pilha)** ou **Preencher (fila)**.  
-5. **Ver animação** reproduz todos os `anim_frame_*.png` em ordem — na mesma sessão, **pilha e fila** podem ficar **numa sequência só** (numeração continua entre um fill e o próximo).  
-6. **Restaurar** volta a imagem, zera o ponto e apaga saídas de teste (inclui esvaziar `saida_animacao`).  
-7. **Fluxo típico (duas áreas):** preencher uma região com **pilha**, outra com **fila**, depois **Ver animação**; um terceiro fill seguiria anexando frames até **Restaurar**.
+Resumo de comportamento:
+- Pilha (LIFO): caminho mais profundo primeiro.
+- Fila (FIFO): expansão por camadas.
 
-A imagem na área central **cabe inteira**, usa até **82%** da largura/altura do painel (sangria branca em volta), **pode ampliar** imagens pequenas; o clique continua alinhado ao retângulo desenhado. Interpolação **nearest-neighbor** mantém pixel art nítido. A mesma lógica de escala/sangria vale na janela **Ver animação**.
+### 3) Animação e saídas
+- Frames em `saida_animacao/` com prefixo `anim_frame_`.
+- Imagens finais:
+  - `saida_pilha.png`
+  - `saida_fila.png`
+- Gravação de frames com `GravadorFramesParalelo` (threads para I/O), sem alterar a lógica do preenchimento.
 
-## Ver a animação
+### 4) Interface (Swing)
+`FloodFillSwingUI`:
+- Carrega `entrada.png`.
+- Usuário escolhe cor.
+- Usuário clica no ponto inicial.
+- Botão executa pilha ou fila.
+- Botão reproduz animação.
+- Botão restaurar limpa saídas e volta ao estado inicial.
 
-**Ver animação** usa `anim_frame_*.png`.
+## Estrutura de arquivos (principal)
 
-**Dica:** em `FloodFillSwingUI`, constante `PASSO_FRAME` (padrão **20**).
+Em `FloodFill/src`:
+- `Main.java`
+- `FloodFillSwingUI.java`
+- `FloodFillService.java`
+- `ImageIOService.java`
+- `GravadorFramesParalelo.java`
+- `ReprodutorAnimacao.java`
+- `LimpezaSaidas.java`
+- `Pixel.java`
+- `Node.java`
+- `LinkedStack.java`
+- `LinkedQueue.java`
+- `LinkedList.java`
 
-### Multithreading (frames)
+Arquivos de entrada/saída:
+- `entrada.png`
+- `src/paint-bucket-icon.png`
+- `saida_pilha.png` (gerado)
+- `saida_fila.png` (gerado)
+- `saida_animacao/` (gerado)
 
-A gravação dos PNG em `saida_animacao/` pode usar **`GravadorFramesParalelo`** (`ExecutorService`) no serviço de flood fill. O preenchimento em si continua sequencial no `BufferedImage`.
+## Como executar
 
-## Limpar saídas do último teste
+1. Abra o projeto no IntelliJ.
+2. Garanta o working directory na pasta `FloodFill`.
+3. Execute `Main`.
+4. Na janela:
+   - escolha uma cor,
+   - clique na imagem,
+   - execute com pilha ou fila,
+   - use "Ver animação" para mostrar os frames.
 
-Na pasta **`FloodFill`**, apague manualmente `saida_pilha.png`, `saida_fila.png` e a pasta **`saida_animacao`**, ou execute **`limpar-saidas.bat`** (Windows) / **`limpar-saidas.ps1`**.
+## Roteiro rápido para apresentar (2-4 minutos)
+
+1. Mostrar a imagem inicial (`entrada.png`).
+2. Explicar que existem dois métodos: pilha (DFS) e fila (BFS).
+3. Executar um preenchimento com pilha.
+4. Executar outro com fila.
+5. Abrir animação e comentar a diferença do padrão de expansão.
+6. Fechar destacando:
+   - estruturas próprias,
+   - controle de limites/cor,
+   - saídas finais + frames.
+
+## Observações finais
+
+- Código sem comentários no fonte (versão de entrega).
+- README focado nos pontos técnicos essenciais para banca.
