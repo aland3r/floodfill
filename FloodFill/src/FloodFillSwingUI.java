@@ -30,8 +30,23 @@ public final class FloodFillSwingUI {
     private static final Cursor CURSOR_BALDE_TINTA = criarCursorBaldeTinta();
 
     private static Cursor criarCursorBaldeTinta() {
-        BufferedImage src = new ImageIOService().ler(
-                Objects.requireNonNull(FloodFillSwingUI.class.getResourceAsStream(ARQUIVO_CURSOR_BALDE)));
+        InputStream in = FloodFillSwingUI.class.getResourceAsStream("/" + ARQUIVO_CURSOR_BALDE);
+        if (in == null) {
+            in = FloodFillSwingUI.class.getResourceAsStream(ARQUIVO_CURSOR_BALDE);
+        }
+        if (in == null) {
+            File arquivoNoDisco = localizarArquivoNoDisco(ARQUIVO_CURSOR_BALDE);
+            if (arquivoNoDisco != null) {
+                BufferedImage srcDisco = new ImageIOService().carregar(arquivoNoDisco.getAbsolutePath());
+                return criarCursorAPartirImagem(srcDisco);
+            }
+            return Cursor.getDefaultCursor();
+        }
+        BufferedImage src = new ImageIOService().ler(in);
+        return criarCursorAPartirImagem(src);
+    }
+
+    private static Cursor criarCursorAPartirImagem(BufferedImage src) {
         BufferedImage bi = garantirArgbParaCursor(src);
         final int target = 32;
         if (bi.getWidth() != target || bi.getHeight() != target) {
@@ -190,13 +205,18 @@ public final class FloodFillSwingUI {
     }
 
     private static File localizarEntradaNoDisco() {
+        return localizarArquivoNoDisco(ARQUIVO_ENTRADA);
+    }
+
+    private static File localizarArquivoNoDisco(String nomeArquivo) {
         String base = System.getProperty("user.dir", ".");
         String[] candidatos = {
-                ARQUIVO_ENTRADA,
-                "FloodFill" + File.separator + ARQUIVO_ENTRADA,
-                "src" + File.separator + ARQUIVO_ENTRADA,
-                base + File.separator + ARQUIVO_ENTRADA,
-                base + File.separator + "FloodFill" + File.separator + ARQUIVO_ENTRADA
+                nomeArquivo,
+                "FloodFill" + File.separator + nomeArquivo,
+                "src" + File.separator + nomeArquivo,
+                base + File.separator + nomeArquivo,
+                base + File.separator + "FloodFill" + File.separator + nomeArquivo,
+                base + File.separator + "FloodFill" + File.separator + "src" + File.separator + nomeArquivo
         };
         for (String rel : candidatos) {
             File t = new File(rel);
