@@ -14,10 +14,10 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.InputStream;
-import java.util.Objects;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
@@ -198,7 +198,17 @@ public final class FloodFillSwingUI {
             if (in == null) {
                 in = FloodFillSwingUI.class.getResourceAsStream(ARQUIVO_ENTRADA);
             }
-            original = io.ler(Objects.requireNonNull(in, "entrada.png: use pasta FloodFill como working directory ou coloque o PNG em src/"));
+            if (in != null) {
+                original = io.ler(in);
+            } else {
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "Não encontrei entrada.png.\n"
+                                + "Abra/importe a pasta raiz do projeto como diretório do projeto (onde está entrada.png)\n"
+                                + "ou defina o working directory para a pasta raiz do repositório.",
+                        "Arquivo ausente",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
         restaurar();
         frame.setTitle("Flood Fill — " + ARQUIVO_ENTRADA);
@@ -214,9 +224,12 @@ public final class FloodFillSwingUI {
                 nomeArquivo,
                 "FloodFill" + File.separator + nomeArquivo,
                 "src" + File.separator + nomeArquivo,
+                ".." + File.separator + nomeArquivo,
                 base + File.separator + nomeArquivo,
                 base + File.separator + "FloodFill" + File.separator + nomeArquivo,
-                base + File.separator + "FloodFill" + File.separator + "src" + File.separator + nomeArquivo
+                base + File.separator + "FloodFill" + File.separator + "src" + File.separator + nomeArquivo,
+                base + File.separator + ".." + File.separator + nomeArquivo,
+                base + File.separator + ".." + File.separator + "src" + File.separator + nomeArquivo
         };
         for (String rel : candidatos) {
             File t = new File(rel);
