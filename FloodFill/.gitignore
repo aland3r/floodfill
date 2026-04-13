@@ -1,0 +1,20 @@
+# Build
+out/
+target/
+*.class
+
+# IntelliJ (recriado ao abrir a pasta)
+.idea/
+*.iml
+
+# Saídas do programa (testes / execução)
+saida_pilha.png
+saida_fila.png
+saida_animacao/
+
+# Mensagem local para git commit -F (não versionar)
+.git-commit-msg.txt
+
+# OS
+.DS_Store
+Thumbs.db
